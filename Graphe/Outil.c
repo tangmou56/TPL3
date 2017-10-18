@@ -23,7 +23,7 @@ long yMallocGereR1[kuMallocGererLiM];
 int zuMallocGereR;
 int bOutilAmorceR;//ie le module a bien été amorcé
 int iEntierPilE[1+kuPileMaX];
-int CLK_TCK=100;
+
 int ipEntierPilE;//index sur iEntierPilE 
 int uPremieR[1+kuPremierRgMax];
 int ipWhilE=0;//index de pile dédié While() et bWhile()
