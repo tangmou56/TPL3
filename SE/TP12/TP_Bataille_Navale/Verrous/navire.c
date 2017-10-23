@@ -9,13 +9,73 @@
 #include <bateau.h>
 #include <mer.h>
 
+void plus_verrou( const int fd,	 bateau_t * bateau)  
+{
+    int i;
+    coord_t * corps_bateau;
+    corps_bateau = bateau_corps_get(bateau);
+    struct flock verrou;
+
+  
+
+    verrou.l_type   = F_WRLCK ;		    	
+    verrou.l_whence = 0 ;		
+    verrou.l_len    = MER_TAILLE_CASE;	
+  //  verrou.l_pid    = bateau_pid_lire(*bateau);	
+    for(i=0; i<BATEAU_TAILLE; i++) 
+    {
+      verrou.l_start  = (long)corps_bateau[i].pos;
+      fcntl( fd , F_SETLKW , &verrou ) ;
+ 
+    }
+
+}
+void moins_verrou( const int fd,	 bateau_t * bateau)  
+{
+    int i;
+    coord_t * corps_bateau;
+    corps_bateau = bateau_corps_get(bateau);
+    struct flock verrou;
+
+  
+
+    verrou.l_type   = F_UNLCK ;		    	
+    verrou.l_whence = 0 ;		
+    verrou.l_len    = MER_TAILLE_CASE;	
+    //verrou.l_pid    = bateau_pid_lire(*bateau);	
+    for(i=0; i<BATEAU_TAILLE; i++) 
+    {
+      verrou.l_start  = (long)corps_bateau[i].pos;
+      fcntl( fd , F_SETLK , &verrou ) ;
+ 
+    }
+
+}
+
+
+
+
+
+
+
 /* 
  *  Programme principal 
  */
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
 
 int
 main( int nb_arg , char * tab_arg[] )
 {
+  int seuil=10;
   char fich_mer[128] ;
   case_t marque = MER_CASE_LIBRE ;
   char nomprog[128] ;
@@ -26,6 +86,10 @@ main( int nb_arg , char * tab_arg[] )
   coords_t * liste_voisins = NULL ;
   booleen_t ok = VRAI ;
   struct flock lock; 
+    coord_t cible ;
+  booleen_t acquisition ;
+  int nb;
+  booleen_t coule = FAUX ;
   /*----------*/
 
   strcpy( nomprog , tab_arg[0] ) ;
@@ -63,7 +127,7 @@ main( int nb_arg , char * tab_arg[] )
       exit(-1);
     }
     
-  lock.l_type = F_RDLCK;
+  lock.l_type = F_WRLCK;
   lock.l_start = 0;
   lock.l_whence = SEEK_SET;
   lock.l_len = 0;
@@ -72,8 +136,19 @@ main( int nb_arg , char * tab_arg[] )
   bateau = bateau_new( NULL , marque , 100) ;
   mer_bateau_initialiser( fd_mer,bateau );	
   
-  lock.l_type = F_UNLCK;
-  fcntl(fd_mer, F_SETLKW, &lock);
+  
+  	mer_nb_bateaux_lire( fd_mer,&nb);
+	if(nb==0)
+		mer_nb_bateaux_ecrire( fd_mer,	1 );	
+	else 
+		mer_nb_bateaux_ecrire( fd_mer,	nb+1);	
+		
+    lock.l_start = 0;
+    lock.l_whence = SEEK_SET;
+    lock.l_len = 0;
+    lock.l_type = F_UNLCK;
+    fcntl(fd_mer, F_SETLK, &lock);
+    plus_verrou(fd_mer,bateau);  
 /***********/  /***********/  /***********/  /***********/  /***********/  /***********/
 
 /***********/  /***********/  /***********/  /***********/  /***********/  /***********/
@@ -81,7 +156,32 @@ main( int nb_arg , char * tab_arg[] )
 	   /* 
        * deplacement des bateaux 
        */
+   //verrou sur touts le fichier
+	/*lock.l_type = F_WRLCK;
+    lock.l_start = 0;
+    lock.l_whence = SEEK_SET;
+    lock.l_len = 0;
+    fcntl(fd_mer, F_SETLKW, &lock);*/
+   
+    energie=energie-5; //consommation de l'energy pour chaque tour
+    
 
+    
+    mer_bateau_est_touche( fd_mer,bateau ,&coule );//vérifier si la bateau a été touché
+     if(coule) 
+        {
+            printf("Vous êtes mort\n");
+            mer_bateau_couler( fd_mer,  bateau );  
+            mer_nb_bateaux_ecrire( fd_mer , nb-1);
+            close(fd_mer);
+            exit(0);
+        }
+    
+    
+    
+    
+    
+	mer_nb_bateaux_lire( fd_mer,&nb);//lire le nombre de bateau existe
       if( (no_err = mer_voisins_rechercher( fd_mer,
 					    bateau,
 					    &liste_voisins )) )
@@ -94,7 +194,12 @@ main( int nb_arg , char * tab_arg[] )
       printf( "Liste des voisins :\n");
       coords_printf( liste_voisins );
       printf("\n\n");
-
+      
+      
+      	
+    moins_verrou(fd_mer,bateau);  //enleve le verrou de sa position enciente
+      
+	//déplacement de la bateau
       if( (no_err = mer_bateau_deplacer( fd_mer,
 					 bateau,
 					 liste_voisins,
@@ -115,9 +220,58 @@ main( int nb_arg , char * tab_arg[] )
 	{
 	  printf(" Deplacement impossible\n");
 	}
-	  
+	
+	if(1){   //fait verrou pour le nouveau position
+    	plus_verrou(fd_mer,bateau);  
+    }
+	
+	
 
-  
+	if(nb>1){//quand il y a plus de 1 bateau, le bateau tirer
+		
+		if( (no_err = mer_bateau_cible_acquerir( fd_mer,
+							   bateau,
+							   &acquisition,
+							   &cible )) )
+			{
+			  fprintf( stderr, "%s : erreur %d dans mer_bateau_cible_acquerir\n",
+				   nomprog , no_err );
+			  exit(no_err) ;
+			}
+
+		  if( acquisition ) 
+			{
+			  printf("Acquisition d'une cible par le bateau \n");
+			  bateau_printf( bateau );
+			  printf( "\n-->La cible choisie est la case ");
+			  coord_printf( cible );
+			  printf( "\n\n");
+			}
+		  else
+			{
+			  printf("Pas d'acquisition de cible pour le bateau \n");
+			  bateau_printf( bateau );
+			  printf( "\n");
+			}
+
+		  if( (no_err = mer_bateau_cible_tirer( fd_mer,
+							cible)) )
+			{
+			  fprintf( stderr, "%s : erreur %d dans mer_bateau_cible_tirer\n",
+				   nomprog , no_err );
+			  exit(no_err) ;
+			}
+	
+	}
+	
+	//déverrou
+	/*lock.l_start = 0;
+    lock.l_whence = SEEK_SET;
+    lock.l_len = 0;
+    lock.l_type = F_UNLCK;
+    fcntl(fd_mer, F_SETLK, &lock);*/
+
+ 
   	sleep(1);
   }
 /***********/  /***********/  /***********/  /***********/  /***********/  /***********/ 

@@ -88,14 +88,18 @@ main( int nb_arg , char * tab_arg[] )
 				nomprog , no_err );
 				exit(no_err) ;
 			}
-			
+			lock.l_start = 0;
+    		lock.l_whence = SEEK_SET;
+   		 	lock.l_len = 0;
 	 		lock.l_type = F_UNLCK;
 		    fcntl(fd_mer, F_SETLKW, &lock);
-		    
+		    close(fd_mer);
 		    
 
 		}
 		time_pre=buf.st_mtime;
+		
+		
 		sleep(1);
 	}
 
