@@ -18,7 +18,7 @@ void plus_verrou( const int fd,	 bateau_t * bateau)  //mettre verrou sur la corp
 
   
 
-    verrou.l_type   = F_WRLCK ;		    	
+    verrou.l_type   = F_RDLCK ;		    	
     verrou.l_whence = 0 ;		
     verrou.l_len    = MER_TAILLE_CASE;	
 
