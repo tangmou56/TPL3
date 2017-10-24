@@ -77,7 +77,9 @@ main( int nb_arg , char * tab_arg[] )
     		lock.l_start = 0;
     		lock.l_whence = SEEK_SET;
    		 	lock.l_len = 0;
-    		fcntl(fd_mer, F_SETLKW, &lock);
+   		 	
+   		 	while(lock.l_type==F_WRLCK)//si il y a un verrou de écriture il s'attente
+    			fcntl(fd_mer, F_GETLK, &lock);
 
 
 			printf(" Mer initiale: \n");
@@ -88,11 +90,7 @@ main( int nb_arg , char * tab_arg[] )
 				nomprog , no_err );
 				exit(no_err) ;
 			}
-			lock.l_start = 0;
-    		lock.l_whence = SEEK_SET;
-   		 	lock.l_len = 0;
-	 		lock.l_type = F_UNLCK;
-		    fcntl(fd_mer, F_SETLKW, &lock);
+
 		    close(fd_mer);
 		    
 
