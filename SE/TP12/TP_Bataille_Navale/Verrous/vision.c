@@ -23,7 +23,8 @@ main( int nb_arg , char * tab_arg[] )
  	 int no_err = CORRECT ;
  	 time_t time_pre=0;
  	 struct stat buf;
-	 struct flock lock; 	  
+	 struct flock lock; 	
+
      /*----------*/
 
      if( nb_arg != 2 )
@@ -74,8 +75,8 @@ main( int nb_arg , char * tab_arg[] )
 			
 
    			lock.l_type = F_RDLCK;
-    		lock.l_start = 0;
-    		lock.l_whence = SEEK_SET;
+    			lock.l_start = 0;
+    			lock.l_whence = SEEK_SET;
    		 	lock.l_len = 0;
    		 	
    		 	while(lock.l_type==F_WRLCK)//si il y a un verrou de écriture il s'attente

@@ -25,8 +25,10 @@ void plus_verrou( const int fd,	 bateau_t * bateau)  //mettre verrou sur la corp
     for(i=0; i<BATEAU_TAILLE; i++) 
     {
       verrou.l_start  = (long)corps_bateau->coords[i].pos;
-      fcntl( fd , F_SETLKW , &verrou ) ;
- 
+      if(fcntl( fd , F_SETLKW , &verrou )==-1){
+	printf("error\nerror\nerror\nerror\nerror\n") ;
+	//exit(1); 
+}
     }
 
 }
@@ -45,7 +47,7 @@ void moins_verrou( const int fd,	 bateau_t * bateau)  //enleve du verrou sur la 
 
     for(i=0; i<BATEAU_TAILLE; i++) 
     {
-      verrou.l_start  = (long)corps_bateau->coords[i].pos;
+      verrou.l_start  = corps_bateau->coords[i].pos;
       fcntl( fd , F_SETLK , &verrou ) ;
  
     }
@@ -57,19 +59,33 @@ void plus_voisin( const int fd,bateau_t * bateau, coords_t * const liste_voisins
 {
     int i;
     case_t case_mer ;
-	int nb_voisins = coords_nb_get(liste_voisins) ; 
+    int nb_voisins = coords_nb_get(liste_voisins) ;
+    struct flock vecase;
+    vecase.l_type   = F_RDLCK ;		
+    vecase.l_whence = 0 ;	  	
+    vecase.l_len    = MER_TAILLE_CASE;
     struct flock verrou;
     verrou.l_type   = F_WRLCK ;		
     verrou.l_whence = 0 ;	  	
-    verrou.l_len    = (long)MER_TAILLE_CASE;	
+    verrou.l_len    = MER_TAILLE_CASE;	
     for(i=0; i<nb_voisins; i++) 
     {
+        vecase.l_start=liste_voisins->coords[i].pos;
+	fcntl( fd , F_SETLKW , &vecase );
         mer_case_lire( fd , liste_voisins->coords[i], &case_mer );
+
         if( case_mer == MER_CASE_LIBRE )
         {
-            verrou.l_start  = (long)liste_voisins->coords[i].pos;
+	    vecase.l_type   = F_UNLCK ;	
+	    fcntl( fd , F_SETLK , &vecase );
+            verrou.l_start  = liste_voisins->coords[i].pos;
             fcntl( fd , F_SETLKW , &verrou );
         }
+	else{
+	    vecase.l_type   = F_UNLCK ;	
+	    fcntl( fd , F_SETLK , &vecase );
+	}
+
     }
 
 }
@@ -77,7 +93,7 @@ void plus_voisin( const int fd,bateau_t * bateau, coords_t * const liste_voisins
 
 
 void moins_voisin( const int fd,bateau_t * bateau, coords_t * const liste_voisins){//enleve du verrou sur les voisin
-    int i;
+   int i;
 
     struct flock verrou;
 	int nb_voisins = coords_nb_get(liste_voisins) ; 
@@ -93,6 +109,28 @@ void moins_voisin( const int fd,bateau_t * bateau, coords_t * const liste_voisin
 
 }
 
+
+void verrou_nb(const int fd){
+	struct flock lock; 
+	lock.l_type = F_WRLCK;
+  	lock.l_start = MER_DEBUT_NB_BATEAUX;
+  	lock.l_whence = SEEK_SET;
+  	lock.l_len = MER_TAILLE_ENTETE;
+ 	fcntl(fd, F_SETLKW, &lock); 
+
+
+
+}
+
+
+void deverrou_nb(const int fd){
+	struct flock lock; 
+	lock.l_type = F_UNLCK;
+  	lock.l_start = MER_DEBUT_NB_BATEAUX;
+  	lock.l_whence = SEEK_SET;
+  	lock.l_len = MER_TAILLE_ENTETE;
+ 	fcntl(fd, F_SETLK, &lock); 
+}
 
 
 
@@ -128,6 +166,8 @@ main( int nb_arg , char * tab_arg[] )
   booleen_t acquisition ;
   int nb;
   booleen_t coule = FAUX ;
+  int gagne=0;
+  int max=5;
   /*----------*/
 
   strcpy( nomprog , tab_arg[0] ) ;
@@ -169,23 +209,27 @@ main( int nb_arg , char * tab_arg[] )
   lock.l_start = 0;
   lock.l_whence = SEEK_SET;
   lock.l_len = 0;
-  fcntl(fd_mer, F_SETLK, &lock);
+  fcntl(fd_mer, F_SETLKW, &lock);
        
   bateau = bateau_new( NULL , marque , 100) ;
   mer_bateau_initialiser( fd_mer,bateau );	
-  
-  
+  lock.l_type = F_UNLCK;
+  fcntl(fd_mer, F_SETLKW, &lock);
+  	verrou_nb(fd_mer);
   	mer_nb_bateaux_lire( fd_mer,&nb);
+
 	if(nb==0)
 		mer_nb_bateaux_ecrire( fd_mer,	1 );	
 	else 
-		mer_nb_bateaux_ecrire( fd_mer,	nb+1);	
+		mer_nb_bateaux_ecrire( fd_mer,	nb+1);
 		
-
-    lock.l_type = F_UNLCK;
-    fcntl(fd_mer, F_SETLK, &lock);
+	deverrou_nb(fd_mer);
+    while(nb<max)
+	mer_nb_bateaux_lire( fd_mer,&nb);
+    sleep(2);
     plus_verrou(fd_mer,bateau);  
-    energie=100;
+    sleep(1);
+
 /***********/  /***********/  /***********/  /***********/  /***********/  /***********/
 
 /***********/  /***********/  /***********/  /***********/  /***********/  /***********/
@@ -200,31 +244,45 @@ main( int nb_arg , char * tab_arg[] )
     	energie=0;
     printf("energie: %f\n",energie);
 
+     
+     mer_bateau_est_touche( fd_mer,bateau ,&coule );//vérifier si la bateau a été touché
     
-    mer_bateau_est_touche( fd_mer,bateau ,&coule );//vérifier si la bateau a été touché
      if(coule) 
         {
             printf("Vous êtes mort\n");
-            mer_bateau_couler( fd_mer,  bateau );  
+	 //   plus_verrou(fd_mer,bateau);
+            mer_bateau_couler( fd_mer,  bateau );
+	   // moins_verrou(fd_mer,bateau);
+
+ 	    verrou_nb(fd_mer);
+	    mer_nb_bateaux_lire( fd_mer,&nb);
             mer_nb_bateaux_ecrire( fd_mer , nb-1);
+	    deverrou_nb(fd_mer);
+
             close(fd_mer);
             exit(0);
         }
     
     
-    
-    
-    
-	mer_nb_bateaux_lire( fd_mer,&nb);//lire le nombre de bateau existe
+    mer_nb_bateaux_lire( fd_mer,&nb);//lire le nombre de bateau existe
+    if(nb>1&&gagne==0)    
+	gagne=1;
+    if(nb==1&&gagne==1){
+	printf("Vous avez gagné \n");
 	
-
-    moins_verrou(fd_mer,bateau);  //enleve le verrou qui est sur la corp
+        mer_bateau_couler( fd_mer,  bateau );
+	
+ 	verrou_nb(fd_mer);
+        mer_nb_bateaux_ecrire( fd_mer , 0);
+	deverrou_nb(fd_mer);
+	close(fd_mer);
+        exit(0);
+    }
+	
+      //enleve le verrou qui est sur la corp
     
    
-    
-       
- 		 
-      
+
 	//déplacement de la bateau
 	
       if( (no_err = mer_voisins_rechercher( fd_mer,
@@ -235,7 +293,9 @@ main( int nb_arg , char * tab_arg[] )
 		   nomprog , no_err );
 	  exit(no_err) ;
 	}
-	  plus_voisin( fd_mer, bateau,liste_voisins);//verrou sur les voisin
+
+      plus_voisin( fd_mer, bateau,liste_voisins);//verrou sur les voisin
+      moins_verrou(fd_mer,bateau);
       printf( "Liste des voisins :\n");
       coords_printf( liste_voisins );
       printf("\n\n");
@@ -248,9 +308,12 @@ main( int nb_arg , char * tab_arg[] )
 		   nomprog , no_err );
 	 	 exit(no_err) ;
 	  }
-	  moins_voisin( fd_mer, bateau,liste_voisins); //enleve les verrou sur voisin
+      moins_voisin( fd_mer, bateau,liste_voisins); //enleve les verrou sur voisin
+      if(energie>=seuil){   //pose de verrou sur le corp de la bateau
+    	plus_verrou(fd_mer,bateau);  
+    	printf("bouclier\n");
+      }
       coords_destroy(&liste_voisins); 
-	
       if( ok )
 	{
 	  printf( "Deplacement reussi\n");
@@ -259,13 +322,8 @@ main( int nb_arg , char * tab_arg[] )
 	{
 	  printf(" Deplacement impossible\n");
 	}
-		
 
-	
-	if(energie>=seuil){   //pose de verrou sur le corp de la bateau
-    	plus_verrou(fd_mer,bateau);  
-    	printf("bouclier\n");
-    }
+
 	
 	
 
@@ -328,22 +386,13 @@ main( int nb_arg , char * tab_arg[] )
 
 
  
-  	sleep(rand()%5);
+  	sleep(rand()%4+1);
   }
 /***********/  /***********/  /***********/  /***********/  /***********/  /***********/ 
   
 
   
 
-
-
-
-
-
-
-  /***********/
-  /* A FAIRE */
-  /***********/
   /***********/  /***********/  /***********/  /***********/  /***********/  /***********/
   printf( "\n\n%s : ----- Fin du navire %c (%d) -----\n\n ", 
 	  nomprog , marque , getpid() );
