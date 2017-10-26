@@ -162,7 +162,6 @@ main( int nb_arg , char * tab_arg[] )
   int nb;
   booleen_t coule = FAUX ;
   int gagne=0;
-  int max=5;
   /*----------*/
 
   strcpy( nomprog , tab_arg[0] ) ;
@@ -219,9 +218,9 @@ main( int nb_arg , char * tab_arg[] )
 		mer_nb_bateaux_ecrire( fd_mer,	nb+1);
 		
 	deverrou_nb(fd_mer);
-    while(nb<max)
+    while(nb<1)
 		mer_nb_bateaux_lire( fd_mer,&nb);
-    sleep(2);
+    sleep(3);
     plus_verrou(fd_mer,bateau);  
     sleep(1);
 
