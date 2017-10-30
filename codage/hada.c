@@ -4,10 +4,11 @@
 void mataff(int mat[][N],int l,int c){
 	int i,j;
 	for(i=1;i<=l;i++){
-		printf("\n");
+		
 		for(j=1;j<=c;j++){
 			printf("%i ",mat[i][j]);
 		}
+		printf("\n");
 	}
 	printf("\n");
 	
@@ -94,6 +95,7 @@ void matCre(int nb,int mat[][N]){
 		nb=nb/2;
 		
 	}
+	printf("matrice de hadamard :\n");
 	mataff(mat,bufnb,bufnb);
 }
 
@@ -136,7 +138,28 @@ void etale(int mat[][N],int donne[][N],int nb,int res[],int nb_donne,int taille_
 }
 
 
-
+void deetale(int nb,int res[],int mat[][N],int nb_donne,int taille_donne){
+	int donne[N][N];
+	int i,j,u,x=0,y=1;
+	for(u=1;u<=nb_donne;u++){
+		for(i=1;i<=taille_donne;i++){
+			for(j=1;j<=nb;j++){
+				x=x+res[y]*mat[u][j];
+				y++;
+			}
+			if(x>0)
+				donne[u][i]=1;
+			else
+				donne[u][i]=-1;
+			x=0;
+			
+		}
+		y=1;
+		
+	}
+	printf("desetalement: \n");
+	mataff(donne,nb_donne,taille_donne);
+}
 
 
 
@@ -153,10 +176,18 @@ void main(){
 	int mat[N][N];
 	int res[N];
 	int donne[N][N]={{1,-1,1},{1,-1,1},{1,1,-1}};
-	int nb=8;
+	int nb=16;
+	printf("donnees: \n");
+	int i,j;
+	for(i=0;i<3;i++){
+		for(j=0;j<3;j++){
+			printf("%i ",donne[i][j]);
+		}
+		printf("\n");
+	}
 	matCre(nb,mat);
 	etale(mat,donne,nb,res,3,3);
-	
+	deetale(nb,res,mat,3,3);
 }
 
 
