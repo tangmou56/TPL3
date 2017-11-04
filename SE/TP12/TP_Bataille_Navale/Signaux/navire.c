@@ -11,7 +11,10 @@
 #include <mer.h>
 #include <bateaux.h>
 #define SIG_JEU SIGUSR1
-/* 
+#define SIG_COULE SIGTRAP
+#define SIG_BOUCLIER SIGUSR2
+#define SIG_GAGNER SIGABRT
+/*
  * VARIABLES GLOBALES (utilisees dans les handlers)
  */
 
@@ -25,7 +28,18 @@ void hdl_jouer(int sig,siginfo_t *siginfo){
 
 
 }
-
+void hdl_coule(int sig,siginfo_t *siginfo){
+	printf("Vous etes mort\n");
+	exit(0);
+	
+	
+}
+void hdl_gagner(int sig,siginfo_t *siginfo){
+	printf("Vous avez gagne\n");
+	exit(0);
+	
+	
+}
 
 
 
@@ -37,10 +51,14 @@ int
 main( int nb_arg , char * tab_arg[] )
 {
 	int i;
-  char nomprog[128] ;
-  pid_t pid_amiral ;
-  pid_t pid_bateau = getpid()  ;
-  struct sigaction act_jouer;
+    char nomprog[128] ;
+    pid_t pid_amiral ;
+    pid_t pid_bateau = getpid()  ;
+	int energie=40;
+    struct sigaction act_jouer;
+	struct sigaction act_coule;
+	struct sigaction act_gagner;
+	int bouc=1;
   /*----------*/
 
   /* 
@@ -72,12 +90,25 @@ main( int nb_arg , char * tab_arg[] )
    */
 	act_jouer.sa_sigaction=hdl_jouer;
 	sigaction(SIG_JEU,&act_jouer,NULL);
-	
+	act_coule.sa_sigaction=hdl_coule;
+	sigaction(SIG_COULE,&act_coule,NULL);
+	act_gagner.sa_sigaction=hdl_gagner;
+	sigaction(SIG_GAGNER,&act_gagner,NULL);
 	kill(pid_amiral,SIG_JEU);
-	
+
 	while (1) {
 		sleep(2);
 		kill(pid_amiral,SIG_JEU);
+		sleep(1);
+		energie=energie-5;
+		if(energie<0)
+			energie=0;
+		if(energie<=10){
+			printf("enleve du bouclier\n");
+			kill(pid_amiral,SIG_BOUCLIER);
+			bouc=0;
+		}
+		printf("energie: %i\n",energie);
 	}
 
   printf( "\n\n--- Arret bateau (%d) ---\n\n" , pid_bateau );
