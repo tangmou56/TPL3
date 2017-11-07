@@ -41,7 +41,7 @@ void hdl_bouclier(int sig,siginfo_t *siginfo){//Changer les situations des boucl
 	signal(SIG_BOUCLIER,hdl_bouclier);
 }
 
-void hdl_jouer(int sig,siginfo_t *siginfo){
+void hdl_jouer(int sig,siginfo_t *siginfo){//fonction principale pour le jeu. deplacement,tirer,et couler
 	pid_t pid=siginfo->si_pid;
 	pid_t pid_cible;
 	int num_bt,num_cible;
@@ -114,8 +114,6 @@ void hdl_jouer(int sig,siginfo_t *siginfo){
 		
 	}
 	
-
-	//kill(pid,SIG_JEU);//renvoie un signal informe
 	signal(SIG_JEU,hdl_jouer);
 }
 
