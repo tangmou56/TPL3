@@ -10,20 +10,22 @@
 
 #include <mer.h>
 #include <bateaux.h>
-#define SIG_JEU SIGUSR1
-#define SIG_COULE SIGTRAP
-#define SIG_BOUCLIER SIGUSR2
 #define SIG_GAGNER SIGABRT
+#define SIG_JEU SIGUSR2
+#define SIG_COULE SIGRTMIN+12
+#define SIG_BOUCLIER SIGRTMIN+11
 /*
  * VARIABLES GLOBALES (utilisees dans les handlers)
  */
 
 int Energie ; 
-
+int reussi_initiale=0;
 /*
  * Handlers 
  */
 void hdl_jouer(int sig,siginfo_t *siginfo){
+	reussi_initiale=1;
+	printf("Initialisation d'un bateau reussie\n");
 	signal(SIG_JEU,hdl_jouer);
 
 
@@ -50,15 +52,14 @@ void hdl_gagner(int sig,siginfo_t *siginfo){
 int
 main( int nb_arg , char * tab_arg[] )
 {
-	int i;
+
     char nomprog[128] ;
     pid_t pid_amiral ;
-    pid_t pid_bateau = getpid()  ;
-	int energie=40;
+    pid_t pid_bateau = getpid();
+    int energie;
     struct sigaction act_jouer;
-	struct sigaction act_coule;
-	struct sigaction act_gagner;
-	int bouc=1;
+    struct sigaction act_coule;
+    struct sigaction act_gagner;
   /*----------*/
 
   /* 
@@ -81,7 +82,7 @@ main( int nb_arg , char * tab_arg[] )
 
 
   /* Affectation du niveau d'energie */
-  Energie = random()%BATEAU_MAX_ENERGIE ;
+  energie = random()%100 ;
   
   printf( "\n\n--- Debut bateau [%d]---\n\n" , pid_bateau );
 
@@ -95,18 +96,21 @@ main( int nb_arg , char * tab_arg[] )
 	act_gagner.sa_sigaction=hdl_gagner;
 	sigaction(SIG_GAGNER,&act_gagner,NULL);
 	kill(pid_amiral,SIG_JEU);
-
-	while (1) {
-		sleep(2);
-		kill(pid_amiral,SIG_JEU);
+	while(reussi_initiale==0){
 		sleep(1);
+		kill(pid_amiral,SIG_JEU);
+	}
+	while (1) {
+		sleep(random()%2+1);
+		printf("envoie d'un signal SIG_JEU\n");
+		kill(pid_amiral,SIG_JEU);
 		energie=energie-5;
+		sleep(1);
 		if(energie<0)
 			energie=0;
 		if(energie<=10){
 			printf("enleve du bouclier\n");
 			kill(pid_amiral,SIG_BOUCLIER);
-			bouc=0;
 		}
 		printf("energie: %i\n",energie);
 	}

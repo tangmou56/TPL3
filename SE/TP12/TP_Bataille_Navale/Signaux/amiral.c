@@ -16,9 +16,9 @@
 #include <bateaux.h>
 
 #define SIG_GAGNER SIGABRT
-#define SIG_JEU SIGUSR1
-#define SIG_COULE SIGTRAP
-#define SIG_BOUCLIER SIGUSR2
+#define SIG_JEU SIGUSR2
+#define SIG_COULE SIGRTMIN+12
+#define SIG_BOUCLIER SIGRTMIN+11
 #define N 100
 int nb_bateau=0;
 int nb_bateau2=0;
@@ -28,20 +28,23 @@ int fd_mer ;
 int bouclier[N];
 int commencer=0;
 
-void hdl_bouclier(int sig,siginfo_t *siginfo){//Changer les situations des boucliers
+void hdl_bouclier(int sig,siginfo_t *siginfo,void *context){//Changer les situations des boucliers
 	pid_t pid=siginfo->si_pid;
 	int num_bt;
-	if(pid!=0){
-		num_bt=bateaux_pid_seek(bt,pid);
-		if(num_bt!=-1)
-			bouclier[num_bt]=0;
+	struct sigaction act_bouclier;
+	act_bouclier.sa_sigaction=hdl_bouclier;
+	act_bouclier.sa_flags=SA_SIGINFO;
+	printf("signal SIG_BOUCLIER reçu pid:%d\n",pid);
+	num_bt=bateaux_pid_seek(bt,pid);
+	if(num_bt!=-1){
+		bouclier[num_bt]=0;
 		printf("##################\nbateau %i enleve du bouclier,pid=%d\n#################\n",num_bt,pid);
 
 	}
-	signal(SIG_BOUCLIER,hdl_bouclier);
+	sigaction(SIG_BOUCLIER,&act_bouclier,NULL);
 }
 
-void hdl_jouer(int sig,siginfo_t *siginfo){//fonction principale pour le jeu. deplacement,tirer,et couler
+void hdl_jouer(int sig,siginfo_t *siginfo,void *context){//fonction principale pour le jeu. deplacement,tirer,et couler
 	pid_t pid=siginfo->si_pid;
 	pid_t pid_cible;
 	int num_bt,num_cible;
@@ -52,12 +55,18 @@ void hdl_jouer(int sig,siginfo_t *siginfo){//fonction principale pour le jeu. de
 	coord_t cible ;
 	booleen_t acquisition ;
 	int tirer_possible=0;
+	int no_err = CORRECT ;
 	case_t case_mer ;
-	
+	printf("signal SIG_JEU reçu pid:%d\n",pid);	
+	struct sigaction act_jouer;
+	act_jouer.sa_sigaction=hdl_jouer;
+	act_jouer.sa_flags=SA_SIGINFO;
+
 	num_bt=bateaux_pid_seek(bt,pid);
 	if(nb_bateau2==1&&commencer==1&&num_bt!=-1){
 		printf("Jeu fini\n");
 		bateau=bateaux_bateau_get(bt,num_bt);
+		printf("bateau %c a gagné\n",bateau_marque_get(bateau));
 		kill(pid,SIG_GAGNER);
 		mer_bateau_couler(fd_mer,bateau);
 		exit(0);
@@ -102,19 +111,24 @@ void hdl_jouer(int sig,siginfo_t *siginfo){//fonction principale pour le jeu. de
 	}
 	else if(pid!=0){//initialiser un nouveau bateau
 		printf("Initiation d'un bateau\n");
-		
 		bateau = bateau_new( NULL , marque , pid) ;
-		mer_bateau_initialiser( fd_mer,bateau );
-		bateaux_bateau_add( bt ,bateau ) ;
-		bouclier[nb_bateau]=1;
-		nb_bateau++;
-		nb_bateau2++;
-		marque++;
-		bateau_destroy(&bateau);
+		no_err=mer_bateau_initialiser( fd_mer,bateau );
+		if( no_err == ERREUR ){
+	      		printf( "mer_bateau_initialiser n'a pas pu placer le bateau pid:%d \n",pid );
+	    	}
+		else{
+			bateaux_bateau_add( bt ,bateau ) ;
+			bouclier[nb_bateau]=1;
+			nb_bateau++;
+			nb_bateau2++;
+			marque++;
+			bateau_destroy(&bateau);
+			kill(pid,SIG_JEU);
+		}
 		
 	}
 	
-	signal(SIG_JEU,hdl_jouer);
+	sigaction(SIG_JEU,&act_jouer,NULL);
 }
 
 
@@ -170,14 +184,12 @@ main( int nb_arg , char * tab_arg[] )
      srandom((unsigned int)getpid());
  //commencer
 	act_bouclier.sa_sigaction=hdl_bouclier;
-	act_bouclier.sa_flags=0;
-	sigemptyset(&act_bouclier.sa_mask);
-	sigaddset(&act_bouclier.sa_mask,SIG_JEU);
+	act_bouclier.sa_flags=SA_SIGINFO;
+
 	sigaction(SIG_BOUCLIER,&act_bouclier,NULL);
 	act_jouer.sa_sigaction=hdl_jouer;
-	act_jouer.sa_flags=0;
-	sigemptyset(&act_jouer.sa_mask);
-	sigaddset(&act_jouer.sa_mask,SIG_BOUCLIER);
+	act_jouer.sa_flags=SA_SIGINFO;
+
 	
 	sigaction(SIG_JEU,&act_jouer,NULL);
 

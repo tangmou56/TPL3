@@ -23,8 +23,8 @@ int main(){
 	act2.sa_sigaction=handler2;
 	act.sa_sigaction=handler;
 	//act.sa_flags=SA_NODEFER;
-	act.sa_flags=0;
-	act2.sa_flags=SA_SIGINFO;
+	//act.sa_flags=0;
+	//act2.sa_flags=SA_SIGINFO;
 	//sigemptyset(&act.sa_mask);
 	//sigaddset(&act.sa_mask,SIGUSR2);
 	sigaction(SIG_JEU,&act,NULL);
