@@ -20,12 +20,12 @@
 #define SIG_COULE SIGRTMIN+12
 #define SIG_BOUCLIER SIGRTMIN+11
 #define N 100
-int nb_bateau=0;
-int nb_bateau2=0;
-bateaux_t * bt = (bateaux_t *) NULL ;
+int nb_bateau=0;//indice sur la derniere element dans la liste bouclier
+int nb_bateau2=0;//quand nb_bateau2>1,ça veut dir que le jeu est commencé, prochaine fois quand le nb de bateau est 1,le jeu fini
+bateaux_t * bt = (bateaux_t *) NULL ;//liste de bateau
 char marque='A';
 int fd_mer ;
-int bouclier[N];
+int bouclier[N];//1=bouclier active,0=pas active
 int commencer=0;
 
 void hdl_bouclier(int sig,siginfo_t *siginfo,void *context){//Changer les situations des boucliers
@@ -63,7 +63,7 @@ void hdl_jouer(int sig,siginfo_t *siginfo,void *context){//fonction principale p
 	act_jouer.sa_flags=SA_SIGINFO;
 
 	num_bt=bateaux_pid_seek(bt,pid);
-	if(nb_bateau2==1&&commencer==1&&num_bt!=-1){
+	if(nb_bateau2==1&&commencer==1&&num_bt!=-1){//Quand il reste un bateau,le jeu fini
 		printf("Jeu fini\n");
 		bateau=bateaux_bateau_get(bt,num_bt);
 		printf("bateau %c a gagné\n",bateau_marque_get(bateau));
@@ -182,7 +182,7 @@ main( int nb_arg , char * tab_arg[] )
 
      /* Initialisation de la generation des nombres pseudo-aleatoires */
      srandom((unsigned int)getpid());
- //commencer
+	 //commencer
 	act_bouclier.sa_sigaction=hdl_bouclier;
 	act_bouclier.sa_flags=SA_SIGINFO;
 
