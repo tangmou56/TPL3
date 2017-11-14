@@ -4,12 +4,31 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <sys/wait.h>
+#include <fcntl.h>
 #define N 100
 
-void tri(int tab[],int size){
+
+
+void sortir(int tab[],int * size,int indice){//sortir d'un element de une liste
+	int i,mid;
+	for(i=indice;i<*size-1;i++){
+		tab[i]=tab[i+1];
+	}
+	*size=*size-1;
+	if(*size<0)
+		*size=0;
+
+}
+
+
+
+void tri(int tab[],int *size){//trier d'une liste croissante
 	int i=0,buf;
-	while(i<size-1){
-		if(tab[i]>tab[i+1]){
+	while(i<*size-1){
+		if(tab[i]==0)
+			sortir(tab,size,i);
+		else if(tab[i]>tab[i+1]){
 			buf=tab[i];
 			tab[i]=tab[i+1];
 			tab[i+1]=buf;
@@ -27,7 +46,7 @@ void tri(int tab[],int size){
 int
 main( int nb_arg , char * tab_arg[] )
 {
-	
+	int fd;
 	char Nom_Prog[256] ;
 	int nb_exec;
 	int nb_proc;
@@ -38,6 +57,7 @@ main( int nb_arg , char * tab_arg[] )
 	int tube[2];
 	int n,i,j,pid=0;
 	int tab[N];
+	int tab_pid[N];
 	if( nb_arg != 4 )
 	{
 		fprintf( stderr , "Usage : %s <nb execution> <command> <nb precessus>\n",
@@ -48,10 +68,15 @@ main( int nb_arg , char * tab_arg[] )
 	sscanf( tab_arg[3] , "%i" , &nb_proc ) ;
 	strcpy( nom_cmd , tab_arg[2] );
 	
+	for(i=0;i<N;i++)
+		tab[i]=0;
+		
+
 	
-	for (j=0; j<nb_proc; j++){
-		pipe(tube);
-		switch (fork()) {
+	pipe(tube);
+	for (j=0; j<nb_proc; j++){//la boucle d'exécution des commandes
+		tab_pid[j]=fork();
+		switch (tab_pid[j]) {
 			case -1:
 				printf("error fork\n");
 				exit(2);
@@ -65,51 +90,67 @@ main( int nb_arg , char * tab_arg[] )
 							printf("error fork\n");
 							exit(2);
 						case 0:/*fils*/
+							fd=open("/dev/null",O_RDWR, 0644 );
+							close(1);
+							dup(fd);
 							execlp(nom_cmd,nom_cmd,NULL);
-							printf("error execlp\n");
-							exit(2);
+							exit(7);
 						default:/*pere*/
 							wait(&n);
 							if(n!=0){
 								if(WIFEXITED(n))
-									printf("Commande se termine anormalement: %i\n",WEXITSTATUS(n));
+									printf("processus %i: Commande se termine anormalement: %i\n",getpid(),WEXITSTATUS(n));
+								if(WEXITSTATUS(n)==7)
+									printf("erreur de execlp\n");
 								if(WIFSIGNALED(n))
-									printf("Execution termine par signal: %d\n",WTERMSIG(n));
+									printf("processus %i: Execution terminé par un signal: %d\n",getpid(),WTERMSIG(n));
 								exit(2);
 							}
 							
 					}
 				}
 				exit(0);
-			default:/*pere*/
-				pid=wait(&n);
-				if(n!=0){
-					printf("Execution pas reussie\n");
-					exit(0);
-				}
-					
-				gettimeofday(&end,NULL);
-				close(tube[1]);
-				read(tube[0],&start,sizeof(struct timeval));
-				time_use=(end.tv_sec-start.tv_sec)*1000000+(end.tv_usec-start.tv_usec);
-				printf("time_use is %i\n",time_use);
-				printf("pid=%i,n=%i\n",pid,n);
-				tab[j]=time_use;
 		}
 		
 	}
-	
+	while(pid!=-1){//boucle pour recevoir les résultats
+		pid=waitpid(-1,&n,WNOHANG);
+		if(n!=0&&pid!=-1&&pid!=0)
+			printf("processus :%i pas reussie\n",pid);
+		else if(pid==-1)
+			printf("fin d'exécution\n");
+		else if(pid!=0){
+			gettimeofday(&end,NULL);
+			for (j=0; j<nb_proc; j++){
+				if(pid==tab_pid[j]){
+					close(tube[1]);
+					read(tube[0],&start,sizeof(struct timeval));
+					time_use=(end.tv_sec-start.tv_sec)*1000000+(end.tv_usec-start.tv_usec);
+					printf("time_use : %i\n",time_use);
+					printf("pid=%i,n=%i\n",pid,n);
+					tab[j]=time_use;		
+				}
+			}
+						
+						
+		}
+	}
+					
 	printf("resultats:\n");
 	for (i=0; i<nb_proc; i++) {
-		tab[i]=tab[i]/nb_exec;
-		printf("M%i=%i ",i,tab[i]);
+		if(tab[i]!=0){
+			tab[i]=tab[i]/nb_exec;
+			printf("M%i=%i ",i,tab[i]);
+		}
 	}
 	printf("\n");
 	
-	tri(tab,nb_proc);
+	tri(tab,&nb_proc);
 	printf("trier:\n");
 	for (i=0; i<nb_proc; i++) {
-		printf("M%i=%i ",i,tab[i]);
+		if(tab[i]!=0){
+			printf("M%i=%i ",i,tab[i]);
+		}
 	}
 	printf("\n");
 	printf("temps moyenne :");
