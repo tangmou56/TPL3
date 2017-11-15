@@ -10,7 +10,7 @@
 
 
 
-void sortir(int tab[],int * size,int indice){//sortir d'un element de une liste
+void sortir(int tab[],int * size,int indice){//sortir d'un element de une liste,et moins 1 la taille
 	int i,mid;
 	for(i=indice;i<*size-1;i++){
 		tab[i]=tab[i+1];
@@ -23,7 +23,7 @@ void sortir(int tab[],int * size,int indice){//sortir d'un element de une liste
 
 
 
-void tri(int tab[],int *size){//trier d'une liste croissante
+void tri(int tab[],int *size){//trier d'une liste croissante,quand un element est 0,le sortie de la liste
 	int i=0,buf;
 	while(i<*size-1){
 		if(tab[i]==0)
@@ -48,16 +48,16 @@ main( int nb_arg , char * tab_arg[] )
 {
 	int fd;
 	char Nom_Prog[256] ;
-	int nb_exec;
-	int nb_proc;
-	char nom_cmd[N];
+	int nb_exec;//nombre de execution
+	int nb_proc;//nombre de processus
+	char nom_cmd[N];//nom de la commande
 	struct timeval start;
 	struct timeval end;
 	int time_use=0;
 	int tube[2];
 	int n,i,j,pid=0;
-	int tab[N];
-	int tab_pid[N];
+	int tab[N];//table de resultat
+	int tab_pid[N];//table de pid des fils
 	if( nb_arg != 4 )
 	{
 		fprintf( stderr , "Usage : %s <nb execution> <command> <nb precessus>\n",
@@ -75,7 +75,7 @@ main( int nb_arg , char * tab_arg[] )
 	
 	pipe(tube);
 	for (j=0; j<nb_proc; j++){//la boucle d'exécution des commandes
-		tab_pid[j]=fork();
+		tab_pid[j]=fork();//mettre les pids de chaque processus dans une liste
 		switch (tab_pid[j]) {
 			case -1:
 				printf("error fork\n");
@@ -90,14 +90,14 @@ main( int nb_arg , char * tab_arg[] )
 							printf("error fork\n");
 							exit(2);
 						case 0:/*fils*/
-							fd=open("/dev/null",O_RDWR, 0644 );
+							fd=open("/dev/null",O_RDWR, 0644 );//redirection des sorties
 							close(1);
 							dup(fd);
 							execlp(nom_cmd,nom_cmd,NULL);
 							exit(7);
 						default:/*pere*/
 							wait(&n);
-							if(n!=0){
+							if(n!=0){//Quand un fils termine anormalment ou interpreter par un signal
 								if(WIFEXITED(n))
 									printf("processus %i: Commande se termine anormalement: %i\n",getpid(),WEXITSTATUS(n));
 								if(WEXITSTATUS(n)==7)
@@ -114,14 +114,14 @@ main( int nb_arg , char * tab_arg[] )
 		
 	}
 	while(pid!=-1){//boucle pour recevoir les résultats
-		pid=waitpid(-1,&n,WNOHANG);
+		pid=waitpid(-1,&n,WNOHANG);//quand des fils sont fini
 		if(n!=0&&pid!=-1&&pid!=0)
 			printf("processus :%i pas reussie\n",pid);
 		else if(pid==-1)
 			printf("fin d'exécution\n");
-		else if(pid!=0){
+		else if(pid!=0){//processus termine normalment
 			gettimeofday(&end,NULL);
-			for (j=0; j<nb_proc; j++){
+			for (j=0; j<nb_proc; j++){//trouver le pid dans la liste des pids
 				if(pid==tab_pid[j]){
 					close(tube[1]);
 					read(tube[0],&start,sizeof(struct timeval));
@@ -136,7 +136,7 @@ main( int nb_arg , char * tab_arg[] )
 		}
 	}
 					
-	printf("resultats:\n");
+	printf("resultats:\n");//afficher les résultats sans trier
 	for (i=0; i<nb_proc; i++) {
 		if(tab[i]!=0){
 			tab[i]=tab[i]/nb_exec;
@@ -145,14 +145,14 @@ main( int nb_arg , char * tab_arg[] )
 	}
 	printf("\n");
 	
-	tri(tab,&nb_proc);
+	tri(tab,&nb_proc);//trier des resultats par croissance
 	printf("trier:\n");
 	for (i=0; i<nb_proc; i++) {
 		if(tab[i]!=0){
 			printf("M%i=%i ",i,tab[i]);
 		}
 	}
-	printf("\n");
+	printf("\n");//afficher le resultat final
 	printf("temps moyenne :");
 	if(nb_proc%2!=0)
 		printf("%i\n",tab[nb_proc/2]);

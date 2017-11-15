@@ -45,6 +45,10 @@ void Tp1TESTER(int iTest){
 		case 1: sMOT="abb";break;
 		case 2: sMOT="abbb";break;
 		case 3: sMOT="a";break;
+		case 4: sMOT="";break;
+		case 5: sMOT="asq";break;
+		case 6: sMOT="baba";break;
+		case 7: sMOT="abba";break;
 		default:Assert1("Tp1TESTER1",0);break;
 
 	}
@@ -72,7 +76,7 @@ int bB(int iDebut,int *piFin){
 int bS(int iDebut,int *piFin){
 //	S->A.B.Q
 	int iFin,iX,iY;
-	int bSucces=bA(iDebut,&iX)&&bB(iX,&iY)&&(d2(iX,iY),1)&&bQ(iY,&iFin);
+	int bSucces=bA(iDebut,&iX)&&bB(iX,&iY)&&bQ(iY,&iFin);
 	*piFin=(bSucces)?iFin:iDebut;
 	return (bSucces);
 

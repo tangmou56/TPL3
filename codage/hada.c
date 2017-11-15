@@ -17,7 +17,7 @@ void mataff(int mat[][N],int l,int c){
 
 
 
-
+//creation de la matrice hadamard
 void matCre(int nb,int mat[][N]){
 	
 	int bufnb=nb;
@@ -137,7 +137,7 @@ void etale(int mat[][N],int donne[][N],int nb,int res[],int nb_donne,int taille_
 	
 }
 
-
+//désetalement apartir des données codé 
 void deetale(int nb,int res[],int mat[][N],int nb_donne,int taille_donne){
 	int donne[N][N];
 	int i,j,u,x=0,y=1;
@@ -173,10 +173,10 @@ void deetale(int nb,int res[],int mat[][N],int nb_donne,int taille_donne){
 
 
 void main(){
-	int mat[N][N];
-	int res[N];
+	int mat_hada[N][N];
+	int res_code[N];
 	int donne[N][N]={{1,-1,1},{1,-1,1},{1,1,-1}};
-	int nb=16;
+	int nb=16,nb_donne=3,taille_donne=3;
 	printf("donnees: \n");
 	int i,j;
 	for(i=0;i<3;i++){
@@ -185,9 +185,9 @@ void main(){
 		}
 		printf("\n");
 	}
-	matCre(nb,mat);
-	etale(mat,donne,nb,res,3,3);
-	deetale(nb,res,mat,3,3);
+	matCre(nb,mat_hada);
+	etale(mat_hada,donne,nb,res_code,nb_donne,taille_donne);
+	deetale(nb,res_code,mat_hada,nb_donne,taille_donne);
 }
 
 

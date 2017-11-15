@@ -10,10 +10,10 @@
 #include <signal.h>
 #define N 100
 
-int cle,cleex;
+int cle,cleex;//cleex=cle donner par utilisateur,cle=descripteur de la file message
 
 
-void hdl_ab(int sig){
+void hdl_ab(int sig){//handler quand recu un signal SIGINT
 	requete_t req;
 	reponse_t rep;
 	int lgq=sizeof(corps_requete_t);
@@ -46,16 +46,18 @@ int main(int nb_arg , char * tab_arg[]){
 		exit(-1);
 	}
 	sscanf( tab_arg[1] , "%i" , &cleex ) ;
+
 	cle=msgget(cleex,IPC_CREAT|0666);
+
 	act.sa_sigaction=hdl_ab;
 	sigaction(SIGINT,&act,NULL);
 	messages_initialiser_attente() ;
-	while(1){
-		msgsnd(cle,&req,lgq,0);	
-		msgrcv(cle,&rep,lgp,getpid(),0);
+	while(1){//boucle du jeu
+		msgsnd(cle,&req,lgq,0);	//envoie de la requete
+		msgrcv(cle,&rep,lgp,getpid(),0);//attente la reponse
 				
-		messages_afficher_reponse( &rep );
-		if(rep.corps.etat==ARRIVE|| rep.corps.etat==DECANILLE)
+		messages_afficher_reponse( &rep );//afficher la reponse
+		if(rep.corps.etat==ARRIVE|| rep.corps.etat==DECANILLE)//verifier si c'est terminé
 			exit(0);
 
 		messages_attendre_tour() ;
