@@ -95,6 +95,26 @@ void codeur_gold(int n,poly_t poly1,poly_t poly2){
 }
 
 
+void codeur_jpl(int n,poly_t poly1,poly_t poly2,poly_t poly3){
+	int i,ran[N],nb_seq=puss2(n)-1;
+	int lm1[N];
+	int lm2[N];
+	int lm3[N];
+	remplir(lm1,n);
+	remplir(lm2,n);
+	remplir(lm3,n);
+	for(i=0;i<nb_seq;i++){
+		
+		ran[i]=generation(lm1,poly1,n)!=generation(lm2,poly2,n);
+		ran[i]=ran[i]!=generation(lm3,poly3,n);
+		
+	}
+	
+	print_liste(ran,nb_seq);
+	
+	
+}
+
 
 
 
@@ -112,12 +132,19 @@ void main(){
 	poly1.p[3]=1;
 	poly1.nb=4;
 	poly_t poly2;
-	poly2.p[0]=5;
+	poly2.p[0]=6;
 	poly2.p[1]=4;
 	poly2.p[2]=3;
 	poly2.p[3]=1;
-	poly2.nb=4;	
+	poly2.nb=4;
+	poly_t poly3;
+	poly3.p[0]=4;
+	poly3.p[1]=3;
+	poly3.p[2]=2;
+	poly3.p[3]=1;
+	poly3.nb=4;
 	codeur_gold(n,poly1,poly2);
+	codeur_jpl(n,poly1,poly2,poly3);
 	/*remplir(lm1,n);
 	for(i=0;i<20;i++){
 		copy_liste(lm1,res[i],n);
