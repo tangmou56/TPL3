@@ -13,26 +13,67 @@
 #endif
 
 #include <file_messages.h>
+int extrait=0;
+void hdl_extrait(){
+	struct sigaction act;
+	act.sa_sigaction=hdl_extrait;
+	act.sa_flags=0;
+	sigaction(SIGUSR2,&act,NULL);
+	extrait=1;
+	
+}
+
+void hld_fin(){
+	printf("Fin de envoyer\n");
+	exit(0);
+}
+
 
 int 
 main( int nb_arg , char * tab_arg[] )
 {     
      char nomprog[128] ;
-
+	 int fd,i;
+	char message[MESSAGES_TAILLE] ;
+	struct sigaction act;
+	struct sigaction act2;
+	struct flock lock;
+	lock.l_start = 0;
+	lock.l_whence = SEEK_SET;
+	lock.l_len = 0;
+	int pid;
      /*-----*/
 
      strcpy( nomprog , tab_arg[0] );
 
-     if( nb_arg != 1 )
+     if( nb_arg != 2 )
        {
 	 fprintf( stdout , "%s - Emetteur dans la communication par fichier\n\n" , nomprog ) ;
-	 fprintf( stdout , "Usage : %s \n" , nomprog ) ;
+	 fprintf( stdout , "Usage : %s <pid> \n" , nomprog ) ;
 	 exit(1) ; 
        }
+	sscanf( tab_arg[1] , "%i" , &pid ) ;
 
-     /*=============================*/
-     /*           A FAIRE           */
-     /*=============================*/
+	act2.sa_sigaction=hld_fin;
+	act.sa_sigaction=hdl_extrait;
+	act.sa_flags=0;
+	sigaction(SIGUSR2,&act,NULL);
+	sigaction(SIGUSR1,&act2,NULL);
+	fd=open(FILE_NAME,O_RDWR|O_CREAT , 0644);
+	file_remplir( message , 'X') ;
+	while(1){
+		lock.l_type = F_WRLCK;
+		fcntl(fd, F_SETLKW, &lock);
+		lseek(fd, 0, SEEK_SET);
+		write(fd,message,MESSAGES_TAILLE);
+		lock.l_type = F_UNLCK;
+		fcntl(fd, F_SETLK, &lock);
+		kill(pid,SIGUSR2);
+		while(extrait==0);
+			kill(pid,SIGUSR2);
+		extrait=0;
+	}
+
     
      exit(0);
 }

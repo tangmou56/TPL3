@@ -7,7 +7,7 @@
 #define _MSG_MESSAGES_H_
 
 #include <messages.h>
-
+#define FILE_NAME "./my_file"
 #define MSG_TYPE_RECEPTEUR 22
 
 /* Structure message */
