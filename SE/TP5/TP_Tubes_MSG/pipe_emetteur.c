@@ -35,20 +35,20 @@ main( int nb_arg , char * tab_arg[])
 
      printf("Process %d opening FIFO \n",getpid());  
       
-     pipe_fd = open(FIFO_NAME, O_RDWR , 0644);  
+     pipe_fd = open(FIFO_NAME, O_RDWR , 0644);  //ouverture du fichier fifo
      printf("Process %d result %d\n", getpid(), pipe_fd);  
     
      printf("Commencer à envoyer les message\n");
      pipe_remplir( msg.message , 'X') ;
      msg.fini=0;
-     gettimeofday(&temps, NULL);
+     gettimeofday(&temps, NULL);//temps de envoyer du 1er message
      temps_debut=temps.tv_sec+(temps.tv_usec/1000000.0);
-     for(i=0;i<MESSAGES_NB-1;i++){
+     for(i=0;i<MESSAGES_NB-1;i++){//boucle de envoyer des messages
 	write(pipe_fd,&msg,sizeof(message_t));
      }
-     msg.fini=1;
-     write(pipe_fd, &msg,sizeof(message_t));
-     write(pipe_fd, &temps_debut,sizeof(double));
+     msg.fini=1;//sigifie que l'envoyer de message est fini
+     write(pipe_fd, &msg,sizeof(message_t));//envoyer le dernier message
+     write(pipe_fd, &temps_debut,sizeof(double));//envoyer le temps de envoyer du 1er message
      printf("Fin d'exécution\n");
 
 }

@@ -37,36 +37,36 @@ main( int nb_arg , char * tab_arg[])
       printf("Consumer Program beginning...\n");  
  
       if(access(FIFO_NAME, F_OK) == -1){  
-        res = mkfifo(FIFO_NAME, 0777);  
+        res = mkfifo(FIFO_NAME, 0777);  //creation du fichier fifo
         if(res != 0){  
             fprintf(stderr, "Could not create fifo %s\n", FIFO_NAME);  
             exit(EXIT_FAILURE);  
         }  
       }  
       printf("Process %d opeining FIFO O_RDONLY\n", getpid());  
-      pipe_fd = open(FIFO_NAME, open_mode);  
+      pipe_fd = open(FIFO_NAME, open_mode);  //ouverture du fichier fifo
       printf("Process %d result %d\n", getpid(), pipe_fd);  
   
       printf("Attente les messages\n");
       if (pipe_fd != -1)  
       {  
-          do{  
+          do{  //boucle pour lire des messages
               res = read(pipe_fd,&msg,sizeof(message_t));  
               bytes += res;  
-          }while(res > 0&&msg.fini==0);  
+          }while(res > 0&&msg.fini==0);  //si la valeur fini dans message est 1,l'envoyer de message est fini
           
       }  
       else  
       {  
           exit(EXIT_FAILURE);  
       }  
-      gettimeofday(&temps, NULL);
+      gettimeofday(&temps, NULL);//temps de recevoir de la derniere message
       temps_fin = temps.tv_sec+(temps.tv_usec/1000000.0);
-      read(pipe_fd,&temps_debut,sizeof(double)); 
+      read(pipe_fd,&temps_debut,sizeof(double)); //lire le temps de envoyer de la 1er message
       close(pipe_fd); 
 
       printf("Process %d finished, %d bytes read\n", getpid(), bytes);  
       printf("\nTemps d'execution du programme %s =  %.6lf secondes  !!!\n", nomprog , temps_fin - temps_debut);  
-      unlink(FIFO_NAME);
+      unlink(FIFO_NAME);//supprimer du fichier fifo
       exit( 0 );
 }
