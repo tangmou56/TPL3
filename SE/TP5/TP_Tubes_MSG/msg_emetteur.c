@@ -27,11 +27,11 @@ main( int nb_arg , char * tab_arg[] )
      strcpy( nomprog , tab_arg[0] );
 
      cle=msgget(1,IPC_CREAT|0666);
-     gettimeofday(&temps, NULL);  
+     gettimeofday(&temps, NULL);  //temps de envoyer de la 1er message,ecrit dans la structure de message,et envoye ensemble avec le message
      message.corps.temps_debut=temps.tv_sec+(temps.tv_usec/1000000.0);
      msg_remplir( &message , 'X');
 
-     for(i=0;i<MESSAGES_NB;i++){
+     for(i=0;i<MESSAGES_NB;i++){//boucle de envoyer des messages
      	msgsnd(cle,&message,lg,0);	
      }
      printf("Fin d'envoyer\n");

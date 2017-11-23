@@ -19,8 +19,8 @@ char big_buffer[BIG_TAILLE] ;
 int pid_emetteur;
 int ecrit=0;
 int n=1;
-void hdl_ecrit(int sig,siginfo_t *siginfo){
-	if(n){
+void hdl_ecrit(int sig,siginfo_t *siginfo){//handler quand recu le signal qui informe que les nouveaux messages sont ecrit
+	if(n){//premier fois recu le signal,garde le pid du emetteur
 		pid_emetteur=siginfo->si_pid;
 		n=0;
 	}
@@ -28,11 +28,11 @@ void hdl_ecrit(int sig,siginfo_t *siginfo){
 	act.sa_sigaction=hdl_ecrit;
 	act.sa_flags=0;
 	sigaction(SIGUSR2,&act,NULL);
-	ecrit=1;
+	ecrit=1;//cette valeur indique que un nouveau message est ecrit
 }
 
 
-void effacer(int fd){
+void effacer(int fd){//effacer le fichier
 	ftruncate(fd,0);
 }
 
@@ -64,35 +64,35 @@ main( int nb_arg , char * tab_arg[] )
        }
 	pid=getpid();
 	printf("PID=%i\n",pid);
-	fd=open(FILE_NAME,O_RDWR|O_CREAT , 0644);
+	fd=open(FILE_NAME,O_RDWR|O_CREAT , 0644);//ouverture du fichier
 	act.sa_sigaction=hdl_ecrit;
 	act.sa_flags=SA_SIGINFO;
-	sigaction(SIGUSR2,&act,NULL);
-	pause();
-	gettimeofday(&temps, NULL);
+	sigaction(SIGUSR2,&act,NULL); //initiation de traitement de signal
+	pause();//attente que emetteur commancer a envoyer les messages
+	gettimeofday(&temps, NULL);//temps de 1er message envoie
 	temps_debut = temps.tv_sec+(temps.tv_usec/1000000.0);
-	for(i=0;i<MESSAGES_NB;i++){
+	for(i=0;i<MESSAGES_NB;i++){//boucle de reception des message
 		lock.l_type = F_RDLCK;
-		fcntl(fd, F_SETLKW, &lock);
+		fcntl(fd, F_SETLKW, &lock);//ajoute de verrou sur fichier
 		lseek(fd, 0, SEEK_SET);
 		res=read(fd,message,MESSAGES_TAILLE);
 		bytes += res;
 
 		effacer(fd);
 		lock.l_type = F_UNLCK;
-		fcntl(fd, F_SETLK, &lock);
+		fcntl(fd, F_SETLK, &lock);//enleve du verrou
 
-		kill(pid_emetteur,SIGUSR2);
-		while(ecrit==0)
+		kill(pid_emetteur,SIGUSR2);//informer le emetteur que le message est extrait
+		while(ecrit==0)//attente que nouveau message est ecrit
 			kill(pid_emetteur,SIGUSR2);
 		ecrit=0;
 		if(i%10000==0)
 			printf("%i\n",i);
 	}
-	gettimeofday(&temps, NULL);
+	gettimeofday(&temps, NULL);//temps de dernier message envoie
 	temps_fin = temps.tv_sec+(temps.tv_usec/1000000.0);
-	kill(pid_emetteur,SIGUSR1);
+	kill(pid_emetteur,SIGUSR1);//envoyer un signal a emtteur pour terminer son processus
     printf("Process %d finished, %d bytes read\n", getpid(), bytes);
-    printf("\nTemps de transfert des messages %s =  %.6lf secondes  !!!\n", nomprog , temps_fin - temps_debut);
+    printf("\nTemps de transfert des messages %s =  %.6lf secondes  !!!\n", nomprog , temps_fin - temps_debut);//affichage de resultat
      exit(0);
 }
