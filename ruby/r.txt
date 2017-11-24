@@ -1,0 +1,249 @@
+##
+# Auteur LeNomDeLEtudiant
+# Version 0.1 : Date : Wed Nov 22 13:47:36 CET 2017
+#
+
+
+class Composant
+
+	#simplification d'une expression
+	def simplifier(n)
+
+		#supprimer les champs egaux
+		n=n.uniq
+		ind=0
+		bool=false
+		#supprimer les elements egaux dans une champs
+		n.each do |i|
+			 n[ind]=i.split(//).uniq.join
+			 ind+=1
+		end
+
+		#supprimer les champs qui contient a et non-a en meme temps
+		ind=0
+		n.each do |i|
+			i.split(//).each do |j|
+				if i.index(j.swapcase)!=nil then
+					bool=true
+				end
+			end
+			
+			if bool then
+				n.delete_at(ind)
+			end
+			ind+=1
+			bool=false
+			
+		end	
+		return n
+	end
+
+	def aff(n)
+		"#{n}"
+	end
+	
+
+	def Composant.aff(n)
+		puts n
+	end
+
+
+
+end
+
+
+
+
+
+
+class Et < Composant
+
+	def in(x,y)
+		@x=x
+		@y=y
+		puts "Porte 'et' reçu : x=#{aff(@x)},y=#{aff(@y)}"
+	end
+
+	def initialize()
+		@x=[]
+		@y=[]
+	end
+
+	def outb
+		ind=0
+		res=[]
+		@x.each do |i|
+			@y.each do |j|
+				res[ind]=i+j
+				ind+=1
+			end
+			
+		end
+		res=simplifier(res)
+		@x=[]
+		@y=[]
+		puts "Porte 'et' envoie : res=#{aff(res)}"
+		return res
+	end
+	
+	def out
+		if @x==1 && @y==1 then
+			res=1
+		else
+			res=0
+		end
+		puts "Porte 'et' envoie : res=#{res}"
+		return res
+	end
+	
+	def to_s
+		"@x=#{@x},@y=#{@y}"
+	end
+
+
+
+end
+
+class Ou < Composant
+
+	def in(x,y)
+		@x=x
+		@y=y
+		puts "Porte 'ou' reçu : x=#{aff(@x)},y=#{aff(@y)}"
+	end
+
+	def initialize()
+		@x=[]
+		@y=[]
+	end
+	
+	def outb
+		res=@x+@y
+		puts "Porte 'ou' envoir : res=#{aff(res)}"
+		return simplifier(res)
+	end
+
+	def out
+		if @x==1 || @y==1 then
+			res=1
+		else
+			res=0
+		end
+		
+		puts "Porte 'ou' envoir : res=#{res}"
+		return res
+	end
+	
+	def to_s
+		"@x=#{@x},@y=#{@y}"
+	end
+
+
+end
+
+
+
+class Non < Composant
+
+	def in(x)
+		@x=x
+		puts "Porte 'non' reçu : x=#{aff(@x)}"
+	end
+
+	def initialize()
+		@x=[]
+	end
+
+
+	def outb
+		ind=0
+		res=[]
+		@x.each do |i|
+			res[ind]=i.swapcase
+			ind+=1
+		end
+		@x=[]
+		puts "Porte 'non' envoie : res=#{aff(res)}"
+		return res
+	end
+
+	def out
+		if @x==1 then
+			res=0
+		else
+			res=1
+		end
+		puts "Porte 'non' envoie : res=#{res}"
+		return res
+	end
+	
+	def to_s
+		"@x=#{@x}"
+	end
+
+end
+
+
+class Xor < Composant
+	def in(x,y)
+		@x=x
+		@y=y
+		puts "Porte 'XOR' reçu : x=#{aff(@x)},y=#{aff(@y)}"
+	end
+
+	def initialize()
+		@x=[]
+		@y=[]
+	end
+
+
+	def outb
+		et1=Et.new
+		et2=Et.new
+		non1=Non.new
+		non2=Non.new
+		ou=Ou.new
+		non1.in(@x)
+		non2.in(@y)
+		et1.in(@x,non2.out)
+		et2.in(@y,non1.out)
+		ou.in(et1.out,et2.out)
+		@x=nil
+		@y=nil
+		res=ou.out
+		puts "Porte 'XOR' envoie : res=#{aff(res)}"
+		return res
+		
+	end
+
+
+	
+	def out
+		et1=Et.new
+		et2=Et.new
+		non1=Non.new
+		non2=Non.new
+		ou=Ou.new
+		non1.in(@x)
+		non2.in(@y)
+		et1.in(@x,non2.out)
+		et2.in(@y,non1.out)
+		ou.in(et1.out,et2.out)
+		@x=nil
+		@y=nil
+		res=ou.out
+		puts "Porte 'XOR' envoie : res=#{res}"
+		return res
+		
+	end
+	
+	def to_s
+		"@x=#{@x},@y=#{@y}"
+	end
+
+
+
+
+end
+
+
