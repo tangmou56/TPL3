@@ -26,7 +26,7 @@ void hdl_ecrit(int sig,siginfo_t *siginfo){//handler quand recu le signal qui in
 	}
 	struct sigaction act;
 	act.sa_sigaction=hdl_ecrit;
-	act.sa_flags=0;
+
 	sigaction(SIGUSR2,&act,NULL);
 	ecrit=1;//cette valeur indique que un nouveau message est ecrit
 }
@@ -42,12 +42,8 @@ main( int nb_arg , char * tab_arg[] )
 {     
      char nomprog[128] ;
      int fd,i=0;
-	 struct flock lock;
 	char message[MESSAGES_TAILLE] ;
 	struct sigaction act;
-	lock.l_start = 0;
-	lock.l_whence = SEEK_SET;
-	lock.l_len = 0;
 	int pid,res;
 	int bytes = 0;
 	struct timeval temps ;
@@ -72,21 +68,14 @@ main( int nb_arg , char * tab_arg[] )
 	gettimeofday(&temps, NULL);//temps de 1er message envoie
 	temps_debut = temps.tv_sec+(temps.tv_usec/1000000.0);
 	for(i=0;i<MESSAGES_NB;i++){//boucle de reception des message
-		lock.l_type = F_RDLCK;
-		fcntl(fd, F_SETLKW, &lock);//ajoute de verrou sur fichier
 		lseek(fd, 0, SEEK_SET);
 		res=read(fd,message,MESSAGES_TAILLE);
 		bytes += res;
-
 		effacer(fd);
-		lock.l_type = F_UNLCK;
-		fcntl(fd, F_SETLK, &lock);//enleve du verrou
-
-		kill(pid_emetteur,SIGUSR2);//informer le emetteur que le message est extrait
-		while(ecrit==0)//attente que nouveau message est ecrit
-			kill(pid_emetteur,SIGUSR2);
+		kill(pid_emetteur,SIGUSR2);//informer le emetteur que le message est extrait		
+		while(ecrit==0);//attente que nouveau message est ecrit
 		ecrit=0;
-		if(i%10000==0)
+		if(i%5000==0)
 			printf("%i\n",i);
 	}
 	gettimeofday(&temps, NULL);//temps de dernier message envoie
