@@ -102,3 +102,25 @@ int bU(int iDebut,int *piFin){
 */
 
 
+
+//TP2
+//(1)
+//langage
+//L=b(b*a+a*b)
+//L=bb*a+ba*b
+//L=(b+)a   + b(1+(a+))b
+//L=(b+)a  +  b(a+)b   +  bb
+//Grammaire algebrique
+//S->U+bVb+bb
+//U->bU+ba
+//V->aV+a
+//Grammaire homogene
+//S->W+U+V
+//U->M+N
+//M->B.U
+//N->B.A
+//W->B.X.B
+//X->Z+A
+//Z->A.X
+//V->B.B
+

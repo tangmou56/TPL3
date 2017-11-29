@@ -1,24 +1,21 @@
 #include "Outil.h"
 #include "Tp2.h"
-//langage
-//L=b(b*a+a*b)
-//L=bb*a+ba*b
-//L=(b+)a   + b(1+(a+))b
-//L=(b+)a  +  b(a+)b   +  bb
-//Grammaire algebrique
-//S->U+bVb+bb
-//U->bU+ba
-//V->aV+a
-//Grammaire homogene
-//S->U+W+V
-//U->M+N
-//M->B.U
-//N->B.A
-//W->B.X.B
-//X->Z+A
-//Z->A.X
-//V->B.B
 
+//(2)
+//langage
+//L=b(n)a(n)b,n>=0
+//L=  (1+b(n)) . (1+a(n)) . b ,n>0
+//L=   a(n=0)b + b(n=0)b + b(n)a(n)b  +  b , n>0
+//L=   b + b(n)a(n)b,n>0
+//Grammaire algebrique
+//S->Wb+b
+//W->bWa+ba
+//Grammaire homogene
+//S->W+B
+//W->W1.B
+//W1->W2+W3
+//W2->B.W1.A
+//W3->B.A
 char *sMOT;
 int bTp2AmorceR=kF;
 int bA(int iDebut,int *piFin);
@@ -42,7 +39,7 @@ void Tp2TESTER(int iTest){
 		case 2: sMOT="baaaaaaab";break;
 		case 3: sMOT="bb";break;
 		case 4: sMOT="";break;
-		case 5: sMOT="asq";break;
+		case 5: sMOT="bbbaaab";break;
 		case 6: sMOT="baba";break;
 		case 7: sMOT="abba";break;
 		default:Assert1("Tp2TESTER1",0);break;
@@ -70,34 +67,43 @@ int bB(int iDebut,int *piFin){
 }
 
 int bS(int iDebut,int *piFin){
-//S->W+U+V
+//S->W+B
 	int iFin;
-	int bSucces=bW(iDebut,&iFin)||bU(iDebut,&iFin)||bV(iDebut,&iFin);
+	int bSucces=bW(iDebut,&iFin)||bB(iDebut,&iFin);
 	*piFin=(bSucces)?iFin:iDebut;
 	return (bSucces);
 
 }
-int bU(int iDebut,int *piFin){
-//U->M+N
-	int iFin=0;
-	int bSucces=bM(iDebut,&iFin)||bN(iDebut,&iFin);
+int bW(int iDebut,int *piFin){
+//W->W1.B
+	int iX,iFin=0;
+	int bSucces=bW1(iDebut,&iX)&&bB(iX,&iFin);
 	*piFin=(bSucces)?iFin:iDebut;
 	return (bSucces);
 }
 
 
 
-int bM(int iDebut,int *piFin){
-//M->B.U
-	int iX,iFin;
-	int bSucces=bB(iDebut,&iX)&&bU(iX,&iFin);
+int bW1(int iDebut,int *piFin){
+//W1->W2+W3
+	int iFin;
+	int bSucces=bW2(iDebut,&iFin)||bW3(iDebut,&iFin);
 	*piFin=(bSucces)?iFin:iDebut;
 	return (bSucces);
 
 }
 
-int bN(int iDebut,int *piFin){
-//N->B.A
+int bW2(int iDebut,int *piFin){
+//W2->B.W1.A
+	int iX,iY,iFin;
+	int bSucces=bB(iDebut,&iX)&&bW1(iX,&iY)&&bA(iY,&iFin);
+	*piFin=(bSucces)?iFin:iDebut;
+	return (bSucces);
+
+}
+
+int bW3(int iDebut,int *piFin){
+//W3->B.A
 	int iX,iFin;
 	int bSucces=bB(iDebut,&iX)&&bA(iX,&iFin);
 	*piFin=(bSucces)?iFin:iDebut;
@@ -105,38 +111,3 @@ int bN(int iDebut,int *piFin){
 
 }
 
-int bW(int iDebut,int *piFin){
-//W->B.X.B
-	int iX,iY,iFin;
-	int bSucces=bB(iDebut,&iX)&&bX(iX,&iY)&&bB(iY,&iFin);
-	*piFin=(bSucces)?iFin:iDebut;
-	return (bSucces);
-
-}
-
-int bX(int iDebut,int *piFin){
-//X->Z+A
-	int iFin;
-	int bSucces=bZ(iDebut,&iFin)||bA(iDebut,&iFin);
-	*piFin=(bSucces)?iFin:iDebut;
-	return (bSucces);
-
-}
-
-int bZ(int iDebut,int *piFin){
-//Z->A.X
-	int iX,iFin;
-	int bSucces=bA(iDebut,&iX)&&bX(iX,&iFin);
-	*piFin=(bSucces)?iFin:iDebut;
-	return (bSucces);
-
-}
-
-int bV(int iDebut,int *piFin){
-//V->B.B
-	int iX,iFin;
-	int bSucces=bB(iDebut,&iX)&&bB(iX,&iFin);
-	*piFin=(bSucces)?iFin:iDebut;
-	return (bSucces);
-
-}
