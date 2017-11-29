@@ -124,3 +124,50 @@ int bU(int iDebut,int *piFin){
 //Z->A.X
 //V->B.B
 
+//(2)
+//langage
+//L=b(n)a(n)b,n>=0
+//L=  (1+b(n)) . (1+a(n)) . b ,n>0
+//L=   a(n=0)b + b(n=0)b + b(n)a(n)b  +  b , n>0
+//L=   b + b(n)a(n)b,n>0
+//Grammaire algebrique
+//S->Wb+b
+//W->bWa+ba
+//Grammaire homogene
+//S->W+B
+//W->W1.B
+//W1->W2+W3
+//W2->B.W1.A
+//W3->B.A
+
+//(3)
+//langage
+//L=  ba + b(n)a(n)(b*)a,n>=0
+//L=  ba + (1+(b+))a + b(n)a(n)(1+(b+))a,n>0
+//L=  b(n)a(n)(b+)a + b(n)a(n)a + (b+)a + ba + a  ,n>0 
+
+//Grammaire algebrique
+//S->Ua+Va+Wa+ba+a
+//U->U1U2
+//U1->bU1a+ba
+//U2->b+bU2
+//V->bVa+ba
+//W->bW+b
+
+//Grammaire homogene
+//S->U+V+W+X+A
+//U->U1.A
+//U1->U3.U4
+//U3->U5+U6
+//U4->U7+B
+//U5->B.U3.A
+//U6->B.A
+//U7->B.U4
+//V->V1.A
+//V1->V2+V3
+//V2->B.V1.A
+//V3->B.A
+//W->W1.A
+//W1->W2+B
+//W2->B.W1
+//X->B.A
