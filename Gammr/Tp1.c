@@ -23,7 +23,7 @@
 //	V->B.Q
 //	A->a
 //	B->b
-char *sMOT;
+/*char *sMOT;
 int bTp1AmorceR=kF;
 int bA(int iDebut,int *piFin);
 int bB(int iDebut,int *piFin);
@@ -99,6 +99,6 @@ int bU(int iDebut,int *piFin){
 	return (bSucces);
 
 }
-
+*/
 
 

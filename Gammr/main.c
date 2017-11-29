@@ -21,8 +21,8 @@ void ModuleAmorceR(){
 		FlotAMORCER();
 		ForetAMORCER();
 		TasAMORCER();
-		Tp1AMORCER();
-		//Tp2AMORCER();
+		//Tp1AMORCER();
+		Tp2AMORCER();
 		//Tp3AMORCER();
 		//Tp4AMORCER();
 		//Tp5AMORCER();
@@ -33,7 +33,7 @@ int main (int argc, const char * argv[]) {
 	Appel0("");//NE PAS TOUCHER; ce code doit toujours être placé au début du main
 		ModuleAmorceR();//NE PAS TOUCHER; ce code doit toujours suivre immédiatement Appel0("")
 		for(i=1;i<=7;i++)		
-			Tp1TESTER(i);
+			Tp2TESTER(i);
 	Appel1("");//NE PAS TOUCHER; ce code doit toujours être placé à la fin du main, juste avant le return()
     return 0;
 }
