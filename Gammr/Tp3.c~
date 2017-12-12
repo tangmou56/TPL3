@@ -44,7 +44,7 @@ void Tp3TESTER(int iTest){
 	switch(iTest){
 		case 1: sMOT="bbbbaaaa";break;
 		case 2: sMOT="baaaaaaab";break;
-		case 3: sMOT="ba";break;
+		case 3: sMOT="bb";break;
 		case 4: sMOT="";break;
 		case 5: sMOT="bbbaaabbb";break;
 		case 6: sMOT="bab";break;
