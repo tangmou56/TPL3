@@ -48,7 +48,7 @@ void Tp3TESTER(int iTest){
 		case 3: sMOT="ba";break;
 		case 4: sMOT="";break;
 		case 5: sMOT="bbbaaabbb";break;
-		case 6: sMOT="bab";break;
+		case 6: sMOT="bacb";break;
 		case 7: sMOT="bbaabbb";break;
 		default:Assert1("Tp2TESTER1",0);break;
 
@@ -79,11 +79,6 @@ int bB(int iDebut,int *piFin){
 
 int bS(int iDebut,int *piFin,int *paA,int *paB){
 //S(a,b)->T(a,b)
-
-
-
-
-
 
 	int iFin,aA,aB;
 	int bSucces=bT(iDebut,&iFin,&aA,&aB);

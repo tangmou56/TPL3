@@ -48,7 +48,7 @@ void Tp3TESTER(int iTest){
 		case 3: sMOT="ba";break;
 		case 4: sMOT="";break;
 		case 5: sMOT="bbbaaabbb";break;
-		case 6: sMOT="bab";break;
+		case 6: sMOT="bacb";break;
 		case 7: sMOT="bbaabbb";break;
 		default:Assert1("Tp2TESTER1",0);break;
 
@@ -58,7 +58,7 @@ void Tp3TESTER(int iTest){
 	bEngendre=bSucces&&nChaineLg(sMOT)==iFin;
 	printf("%s:%s %s engendré par la Tp3 décrite dans \"Tp3.c\".\n",(bEngendre)?"SUCCES":"ECHEC",sG(sMOT),sEst(bEngendre));
 	if(bEngendre)
-		printf("Nombre a=%i,Nombre b=%i",a,b);
+		printf("Nombre a=%i,Nombre b=%i\n",a,b);
 
 }
 
@@ -79,11 +79,6 @@ int bB(int iDebut,int *piFin){
 
 int bS(int iDebut,int *piFin,int *paA,int *paB){
 //S(a,b)->T(a,b)
-
-
-
-
-
 
 	int iFin,aA,aB;
 	int bSucces=bT(iDebut,&iFin,&aA,&aB);
