@@ -2,32 +2,33 @@
 #include "Tp3.h"
 
 //langage
-//L=b(n)a(n),n est un carre non nul
+//L=((a+b)+)
 
 
 //Grammaire algébrique
-//S->T
-//T->bTa+ba
+//S->aS+bS+a+b
+
 
 
 //Grammaire homogène
 //S->T
-//T->T1+T2
-//T1->B.T.A
-//T2->B.A
+//T->T1+T2+A+B
+//T1->A.T
+//T2->B.T
 
 //Attribut
-//S->T(a).(a est un carre non nul)
-//T(a)->T1(a)+T2(a)
-//T1(a+1)->B.T(a).A
-//T2(1)->B.A
-
+//S(a,b)->T(a,b)
+//T(a,b)->T1(a,b)+T2(a,b)+T3(a,b)+T4(a,b)
+//T1(a+1,b)->A.T(a,b)
+//T2(a,b+1)->B.T(a,b)
+//T3(1,0)->A
+//T4(0,1)->B
 
 char *sMOT;
 int bTp2AmorceR=kF;
 int bA(int iDebut,int *piFin);
 int bB(int iDebut,int *piFin);
-int bS(int iDebut,int *piFin);
+int bS(int iDebut,int *piFin,int *paA,int *paB);
 
 
 void Tp3AMORCER(){
@@ -39,7 +40,7 @@ void Tp3INITIALISER(){
 }
 
 void Tp3TESTER(int iTest){
-	int bEngendre,iFin,bSucces;
+	int bEngendre,iFin,bSucces,a,b;
 	Assert1("Tp3TESTER0",bTp2AmorceR);
 	switch(iTest){
 		case 1: sMOT="bbbbaaaa";break;
@@ -53,9 +54,12 @@ void Tp3TESTER(int iTest){
 
 	}
 
-	bSucces=bS(0,&iFin);
+	bSucces=bS(0,&iFin,&a,&b);
 	bEngendre=bSucces&&nChaineLg(sMOT)==iFin;
 	printf("%s:%s %s engendré par la Tp3 décrite dans \"Tp3.c\".\n",(bEngendre)?"SUCCES":"ECHEC",sG(sMOT),sEst(bEngendre));
+	if(bEngendre)
+		printf("Nombre a=%i,Nombre b=%i\n",a,b);
+
 }
 
 
@@ -73,62 +77,20 @@ int bB(int iDebut,int *piFin){
 
 }
 
-int bS(int iDebut,int *piFin){
-//S->T(a).(a est un carre non nul)
+int bS(int iDebut,int *piFin,int *paA,int *paB){
+//S(a,b)->T(a,b)
 
 
 
 
-	int iFin,aT;
-	int bSucces=bT(iDebut,&iFin,&aT)&&(estcarre(aT));
+
+
+	int iFin,aA,aB;
+	int bSucces=bT(iDebut,&iFin,&aA,&aB);
 
 	*piFin=(bSucces)?iFin:iDebut;
-	
-	return (bSucces);
-
-}
-
-int puss(int n){
-	int i,res=1;
-	for(i=0;i<n;i++){
-		 	res=res*2;
-		
-		}
-	return res;
-
-}
-
-
-
-int estcarre(int n){
-		int i,a=0;
-		for(i=0;i<10;i++){
-				if(n==puss(i))			
-						a= 1;
-			}
-
-	return a;
-	}
-
-
-
-int bT(int iDebut,int *piFin,int *paN){
-//T(a)->T1(a)+T2(a)
-	int iFin=0,aT;
-	int bSucces=bT1(iDebut,&iFin,&aT)||bT2(iDebut,&iFin,&aT);
-	*piFin=(bSucces)?iFin:iDebut;
-	*paN=aT;
-	return (bSucces);
-}
-
-
-
-int bT1(int iDebut,int *piFin,int *paN){
-//T1(a+1)->B.T(a).A
-	int iX,iY,iFin,aT;
-	int bSucces=bB(iDebut,&iX)&&bT(iX,&iY,&aT)&&bA(iY,&iFin);
-	*piFin=(bSucces)?iFin:iDebut;
-	*paN=aT+1;
+	*paA=aA;
+	*paB=aB;
 	return (bSucces);
 
 }
@@ -136,14 +98,62 @@ int bT1(int iDebut,int *piFin,int *paN){
 
 
 
-int bT2(int iDebut,int *piFin,int *paN){
-//T2(1)->B.A
-	int iX,iFin;
-	int bSucces=bB(iDebut,&iX)&&bA(iX,&iFin);
+int bT(int iDebut,int *piFin,int *paA,int *paB){
+//T(a,b)->T1(a,b)+T2(a,b)+T3(a,b)+T4(a,b)
+	int iFin=0,aA,aB;
+	int bSucces=bT1(iDebut,&iFin,&aA,&aB)||bT2(iDebut,&iFin,&aA,&aB)||bT3(iDebut,&iFin,&aA,&aB)||bT4(iDebut,&iFin,&aA,&aB);
 	*piFin=(bSucces)?iFin:iDebut;
-	*paN=1;
+	*paA=aA;
+	*paB=aB;
+	return (bSucces);
+}
+
+
+
+int bT1(int iDebut,int *piFin,int *paA,int *paB){
+//T1(a+1,b)->A.T(a,b)
+	int iX,iFin,aA,aB;
+	int bSucces=bA(iDebut,&iX)&&bT(iX,&iFin,&aA,&aB);
+	*piFin=(bSucces)?iFin:iDebut;
+	*paA=aA+1;
+	*paB=aB;
 	return (bSucces);
 
 }
 
 
+
+
+int bT2(int iDebut,int *piFin,int *paA,int *paB){
+//T2(a,b+1)->B.T(a,b)
+	int iX,iFin,aA,aB;
+	int bSucces=bB(iDebut,&iX)&&bT(iX,&iFin,&aA,&aB);
+	*piFin=(bSucces)?iFin:iDebut;
+	*paA=aA;
+	*paB=aB+1;
+	return (bSucces);
+
+}
+
+
+int bT3(int iDebut,int *piFin,int *paA,int *paB){
+//T3(1,0)->A
+	int iFin;
+	int bSucces=bA(iDebut,&iFin);
+	*piFin=(bSucces)?iFin:iDebut;
+	*paA=1;
+	*paB=0;
+	return (bSucces);
+
+}
+
+int bT4(int iDebut,int *piFin,int *paA,int *paB){
+//T4(0,1)->B
+	int iFin;
+	int bSucces=bB(iDebut,&iFin);
+	*piFin=(bSucces)?iFin:iDebut;
+	*paA=0;
+	*paB=1;
+	return (bSucces);
+
+}
