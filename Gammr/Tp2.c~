@@ -33,7 +33,7 @@
 //X->B.A
 
 
-/*char *sMOT;
+char *sMOT;
 int bTp2AmorceR=kF;
 int bA(int iDebut,int *piFin);
 int bB(int iDebut,int *piFin);
@@ -224,4 +224,4 @@ int bX(int iDebut,int *piFin){
 	*piFin=(bSucces)?iFin:iDebut;
 	return (bSucces);
 
-}*/
+}
