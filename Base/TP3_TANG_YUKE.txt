@@ -1,0 +1,125 @@
+-- Commandes postgre
+
+1.
+CREATE SCHEMA videoclub;
+SET search_path TO videoclub,"u_l3info032";
+
+-- Commandes DDL
+2.
+\i ~/tpl3/TPL3/Base/Script_VideoClub.sql
+ 
+ALTER TABLE client add COLUMN statut varchar(20) default 'ok' check (statut in('ok','banni','sursis'));
+ 
+3.
+alter table emprunt add
+CONSTRAINT id FOREIGN KEY (id_dvd) REFERENCES dvd (id_dvd) ON UPDATE CASCADE;
+ 
+alter table emprunt add
+CONSTRAINT id_d FOREIGN KEY (id_dvd) REFERENCES dvd (id_dvd) ON delete CASCADE;
+ 
+--Commandes sql
+4.
+select count(distinct id_pers)  from film where id_pers in(
+select id_pers from acteur where id_film in(
+select id_film from film where id_genre=(select id_genre from genre where nom_genre='Drame')));
+
+5.
+select * from film left join
+dvd on dvd.id_film=film.id_film left join 
+magasin on dvd.id_magasin=magasin.id_magasin left join
+personne on film.id_pers=personne.id_pers left join 
+genre on film.id_genre=genre.id_genre;
+
+select id_film,titre,nom_genre,id_magasin from film natural join
+dvd natural join 
+magasin natural join
+personne natural join 
+genre;
+
+6.
+CREATE OR REPLACE FUNCTION nb_emp(varchar(20)) RETURNS record
+as
+	'select count(*) from emprunt where id_dvd in (select id_dvd from dvd where id_film=(select id_film from film where titre=$1));'
+language sql;
+
+
+
+7.
+select id_film,count(*) from emprunt natural join dvd group by id_film having count(*)>=all(select count(*) from emprunt natural join dvd);
+
+8.
+CREATE OR REPLACE FUNCTION nb_dvd(idc int) RETURNS RECORD AS $$
+DECLARE
+	res record;
+	cau int;
+BEGIN
+	cau=(select caution from client where id_client=idc);
+	select cau/10 into res;
+	RETURN res;
+END;
+
+$$ LANGUAGE plpgsql;
+
+
+9.
+CREATE OR REPLACE FUNCTION disp(ng char,idm int) RETURNS RECORD AS $$
+DECLARE
+	id_f int;
+	id_g int;
+	res record;
+BEGIN
+	id_g=(select id_genre from genre where nom_genre=ng);
+	for id_f in 
+	select id_film from dvd where id_magasin=idm 
+	loop
+		select * from film where id_film=id_f and id_genre=id_g into res;
+	end loop;
+
+	RETURN res;
+END;
+
+$$ LANGUAGE plpgsql;
+
+select disp('Drame',1);
+
+
+10.
+CREATE OR REPLACE FUNCTION st() RETURNS void AS $$
+DECLARE
+	d1 date;
+	i date;
+	j date;
+	idc int;
+	nb int;
+	nb_e int;
+BEGIN
+
+	
+	for i,j,idc in 
+	select date_deb,date_fin,id_client from emprunt  
+	loop
+		if(j-i)>7 then
+			update client set statut='sursis' where id_client=idc;
+		end if;
+		
+		nb=(select caution from client where id_client=idc);
+		
+		nb=nb/10;
+		nb_e=(select count(*) from emprunt where id_client=idc);
+		if(nb_e>nb) then
+			update client set statut='sursis' where id_client=idc;
+		end if;
+		
+	end loop;
+	
+	
+	
+END;
+
+$$ LANGUAGE plpgsql;
+
+select st();
+
+11.
+
+

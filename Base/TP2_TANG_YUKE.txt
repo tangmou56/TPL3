@@ -1,0 +1,143 @@
+
+
+
+—-ROLE
+1.
+ALTER ROLE u_l3info032 WITH PASSWORD ‘123456’;
+
+
+2.
+CREAT ROLE group;
+GRANT group TO u_l3info032;
+SET ROLE to l3info003_032;
+
+—SCHEMA
+3.
+CREATE SCHEMA u_l3info032;
+CREATE SCHEMA u_l3info003;
+
+
+—PRIVILEGES
+4.
+REVOKE all ON DATABASE  bd_l3info032 FROM PUBLIC;
+
+5.
+GRANT all ON DATABASE  bd_l3info032 TO u_l3info032;
+
+
+—SQL procedural
+
+1.
+CREATE OR REPLACE FUNCTION bonjour() RETURNS void AS $$
+BEGIN
+	RAISE NOTICE 'bonjour';
+END;
+
+$$ LANGUAGE plpgsql;
+
+
+2.
+CREATE OR REPLACE FUNCTION compar(a int,b int) RETURNS RECORD AS $$
+DECLARE
+	res record;
+	min int;
+	max int;
+BEGIN
+	RAISE NOTICE 'a vaut %',a;
+	RAISE NOTICE 'b vaut %',b;
+	IF a>b THEN
+		max=a;
+		min=b;
+	ELSE
+		max=b;
+		min=a;
+	END IF;
+		select 'max='||max,'min='||min into res;
+	RETURN res;
+END;
+
+$$ LANGUAGE plpgsql;
+
+select compar(4,3);
+
+--Platefrome de jeux en ligne
+3.
+ALTER TABLE visiteur
+ADD nom varchar(20);
+ALTER TABLE visiteur
+ADD prenom varchar(20);
+
+
+4.
+CREATE OR REPLACE FUNCTION maj_nom_prenom(varchar(20),varchar(20),varchar(20)) RETURNS void
+as
+	'update visiteur set nom=$2,prenom=$3 where login=$1;'
+language sql;
+
+select maj_nom_prenom('Billy','Bil','lly')
+
+5.
+CREATE OR REPLACE FUNCTION listing(nom_jeu varchar,login varchar) RETURNS setof RECORD AS $$
+DECLARE
+	res record;
+BEGIN
+	
+	select * into res from avatar;
+	
+	RETURN query(select * from avatar);
+END;
+
+$$ LANGUAGE plpgsql;
+
+select * from listing('a','b');
+
+select id_avatar from avatar where id visiteur=() and 
+
+
+6.
+
+
+
+--exam
+1.
+
+
+select max(count) from (select count(nb_dispo) from stock where id_visiteur=(select id_visiteur from visiteur))as b;
+
+2.
+CREATE OR REPLACE FUNCTION prix(varchar(20)) RETURNS record
+as
+	'select prix from objet where nom_objet=$1;'
+language sql;
+
+2b.
+select prix('Gant de venin');
+678
+
+3.
+CREATE OR REPLACE FUNCTION plus(l1 char,l2 char) RETURNS RECORD AS $$
+DECLARE
+	res record;
+	nb1 int;
+	nb2 int;
+	id1 int;
+	id2 int;
+BEGIN
+
+	nb1=(select count(*) from (select * from avatar where id_visiteur=(select id_visiteur from visiteur where login=l1)) as a);
+	nb2=(select count(*) from (select * from avatar where id_visiteur=(select id_visiteur from visiteur where login=l2)) as b);
+	
+	IF nb1>nb2 THEN
+		select l1 into res;
+	ELSE
+		select l2 into res;
+	END IF;
+	RETURN res;
+END;
+
+$$ LANGUAGE plpgsql;
+
+
+4.
+select plus('Elijah','Ian');
+elijah
