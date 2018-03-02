@@ -1,0 +1,19 @@
+2057203406.4776830.a9bf71fa0d354caf951335e822d138ad
+
+4776830ec0d0493dbd00129348653418
+
+http://localhost/
+
+
+Client ID 4776830ec0d0493dbd00129348653418
+
+Client Secret 49238f41d46f4c5d8f66d5579b811636
+
+
+https://api.instagram.com/v1/users/self/?access_token=2057203406.4776830.a9bf71fa0d354caf951335e822d138ad
+
+https://api.instagram.com/v1/users/self/media/recent?access_token=2057203406.4776830.a9bf71fa0d354caf951335e822d138ad
+
+https://api.instagram.com/v1/users/songofstyle/media/recent?access_token=2057203406.4776830.a9bf71fa0d354caf951335e822d138ad
+
+https://api.instagram.com/v1/users/arthurpr10/media/recent?access_token=2057203406.4776830.a9bf71fa0d354caf951335e822d138ad
