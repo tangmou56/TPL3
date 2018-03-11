@@ -4,26 +4,26 @@ import javax.swing.*;
 
 public class Panneau extends JPanel {
 
-
-
+  private JLabel lbnom = new JLabel("Nom");
+  private JLabel lbip= new JLabel("IP");
+  private JLabel lbport = new JLabel("Port");
+  private JLabel lbcon = new JLabel("Connectés");
+  private JLabel lbdis = new JLabel("Discussion");
+  private JLabel lbmes = new JLabel("Message");
+  private JTextField nom=new JTextField(15);
+  private JButton con=new JButton("connection");
+  private JTextField ip=new JTextField(15);
+  private JTextField port=new JTextField(15);
+  private JButton envo=new JButton("envoyer");
+  private JTextArea textcon = new JTextArea(5, 15);
+  private JTextArea textdis = new JTextArea(5, 15);
+  private JTextField textmes=new JTextField(15);
+  private Client client;
   public Panneau(){
 
-      
 
-      JLabel lbnom = new JLabel("Nom"); 
-      JLabel lbip= new JLabel("IP");
-      JLabel lbport = new JLabel("Port");
-      JLabel lbcon = new JLabel("Connectés");
-      JLabel lbdis = new JLabel("Discussion");
-      JLabel lbmes = new JLabel("Message");  
-      JTextField nom=new JTextField(15);
-      JButton con=new JButton("connection");
-      JTextField ip=new JTextField(15);
-      JTextField port=new JTextField(15);
-      JButton envo=new JButton("envoyer");
-      JTextArea textcon = new JTextArea(5, 15);
-      JTextArea textdis = new JTextArea(5, 15);
-      JTextField textmes=new JTextField(15);
+
+
 
       Box vbox=Box.createVerticalBox();
       Box vbox2=Box.createVerticalBox();
@@ -31,6 +31,31 @@ public class Panneau extends JPanel {
       Box hbox1=Box.createHorizontalBox();
       Box hbox2=Box.createHorizontalBox();
       Box hbox3=Box.createHorizontalBox();
+
+
+
+      Panneau pan=this;
+      con.addActionListener(new ActionListener() {
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                String n=nom.getText();
+                String h=ip.getText();
+                int p=Integer.parseInt(port.getText());
+                client=new Client(n,h,p,pan);
+                client.open();
+            }
+        });
+
+
+        envo.addActionListener(new ActionListener() {
+
+              @Override
+              public void actionPerformed(ActionEvent e) {
+                  client.sendmsg(textmes.getText());
+              }
+          });
+
 
 
 
@@ -63,5 +88,13 @@ public class Panneau extends JPanel {
 
   }
 
-  
+  public JTextArea dis(){
+    return textdis;
+  }
+
+  public JTextArea con(){
+    return textcon;
+  }
+
+
 }

@@ -5,21 +5,27 @@ import java.io.PrintWriter;
 import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.*;
-public class Client {
+public class Client implements Runnable{
+  private String nom;
+  private String host;
+  private int port;
+  private Panneau pan;
+  private PrintWriter writer = null;
+  private BufferedInputStream reader = null;
+  public Client(String nom,String host,int port,Panneau pan){
+    this.nom=nom;
+    this.host=host;
+    this.port=port;
+    this.pan=pan;
+  }
 
-   public static void main(String[] args) {
-      Scanner sc = new Scanner(System.in);
-      String host = "127.0.0.1";
-      String nom;
+   public void open() {
       int stream;
-      System.out.println("Saisir nom");
-      nom=sc.nextLine();
+      Scanner sc = new Scanner(System.in);
       String command;
-      int port = 2345;
       Socket connexion=null;
       byte[] b = new byte[4096];
-      PrintWriter writer = null;
-      BufferedInputStream reader = null;
+
       boolean over=false;
       try {
           connexion = new Socket(host, port);
@@ -40,27 +46,34 @@ public class Client {
               System.out.println("nom existe");
           }
           else{
-              Thread t = new Thread(new Clientlisten(reader));
+              Thread t = new Thread(new Clientlisten(reader,pan));
               t.start();
-              while(!over){
-                  command=sc.nextLine();
-                  writer.write(command);
-                  writer.flush();
-                  System.out.println("msg envoye");
-                  if(command.compareTo("/q")==0)
-                      over=true;
-                  if(command.compareTo("/l")==0){
-                      stream=reader.read(b);
-                      command = new String(b, 0, stream);
-                      System.out.println(command);
-                  }
-
-              }
-              System.out.println("deconnect");
 
           }
       }catch (IOException e1) {
             e1.printStackTrace();
       }
    }
+
+
+   public void sendmsg(String msg){
+       //int stream;
+       //byte[] b = new byte[4096];
+       writer.write(msg);
+       writer.flush();
+       System.out.println("msg envoye");
+       /*
+       if(msg.compareTo("/q")==0)
+           over=true;
+       if(msg.compareTo("/l")==0){
+           stream=reader.read(b);
+           msg = new String(b, 0, stream);
+           System.out.println(msg);
+       }*/
+   }
+
+
+   public void run(){
+ 			open();
+ 	  }
 }

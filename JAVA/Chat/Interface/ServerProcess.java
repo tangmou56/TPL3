@@ -57,6 +57,11 @@ public class ServerProcess implements Runnable {
 					else{
 						writer.write("ok");
 						writer.flush();
+
+						String list=String.join(",", db.listnom());
+						broadcast("/l"+list);
+
+
 						while(!over){
 							stream=reader.read(b);
 							response = new String(b, 0, stream);
@@ -64,17 +69,19 @@ public class ServerProcess implements Runnable {
 
 							if(response.compareTo("/q")==0)
 								over=true;
-							else if(response.compareTo("/l")==0){
+							/*else if(response.compareTo("/l")==0){
 								String list=String.join(",", db.listnom());
 								writer.write(list);
 								writer.flush();
-							}
+							}*/
 							else{
 								broadcast(nom+":"+response);
 							}
 
 						}
 						db.deconnect(nom);
+						list=String.join(",", db.listnom());
+						broadcast("/l"+list);
 				}
 
 
