@@ -11,15 +11,18 @@ import java.util.Date;
 
 public class Server {
 
-   public static void main(String[] args){
-    
+  private ServerSocket server = null;
+  private Database db=new Database();
+
+
+   public void open(){
+
       String host = "127.0.0.1";
       int port = 2345;
-      ServerSocket server = null;
-      
-      Socket sock=null;
-      
-      System.out.println("Serveur initialisé.");
+      //ServerSocket server = null;
+      //Database db=new Database();
+      //Socket sock=null;
+
       try {
          server = new ServerSocket(port, 100, InetAddress.getByName(host));
       } catch (UnknownHostException e) {
@@ -28,17 +31,27 @@ public class Server {
          e.printStackTrace();
       }
 
-      //listening
-      while(true){
-         try {
-            sock = server.accept();
-            System.out.println("Connexion cliente reçue.");
-            Thread t = new Thread(new ServerProcess(sock));
-            t.run();
-         }catch (IOException e) {
-            e.printStackTrace();
+
+
+
+
+      Thread t = new Thread(new Runnable(){
+         public void run(){
+            while(true){
+
+              try {
+                 Socket sock = server.accept();
+                 System.out.println("Connexion cliente reçue.");
+                 Thread t = new Thread(new ServerProcess(sock,db));
+                 t.start();
+              }catch (IOException e) {
+                 e.printStackTrace();
+              }
+            }
+
          }
-      }
+      });
+        t.start();
 
 
 
@@ -46,7 +59,6 @@ public class Server {
 
 
 
-   
 
 
 
