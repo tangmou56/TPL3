@@ -6,12 +6,15 @@ import java.io.PrintWriter;
 
 import java.text.DateFormat;
 import java.util.Date;
+import java.awt.*;
+import java.awt.event.*;
+import javax.swing.*;
 
 public class Clientlisten implements Runnable {
 
 	private Socket sock;
 	private BufferedInputStream reader = null;
-  private boolean over=false;
+  	private boolean over=false;
 	private Panneau pan;
 	public Clientlisten(BufferedInputStream reader,Panneau pan){
   		this.reader=reader;
@@ -29,14 +32,21 @@ public class Clientlisten implements Runnable {
             stream=reader.read(b);
             msg = new String(b, 0, stream);
 						if(msg.startsWith("/l")){
+							pan.con().setText("");
 							System.out.println("recive list");
-							msg.replace("/l","");
+							msg=msg.replace("/l","");
+							String[] ls=msg.split(",");
+							for(int i=0;i<ls.length;i++)
+								pan.con().append(ls[i]+"\n");
+
+
 							
-							pan.con().setText(msg);
 						}
 						else{
-            	System.out.println(msg);
+            				System.out.println(msg);
 							pan.dis().append(msg+"\n");
+							JScrollBar scrollBar=pan.sdis().getVerticalScrollBar();
+							scrollBar.setValue(scrollBar.getMaximum());
 						}
           }
 			}

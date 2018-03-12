@@ -5,13 +5,14 @@ import java.io.PrintWriter;
 import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.*;
-public class Client implements Runnable{
+public class Client{
   private String nom;
   private String host;
   private int port;
   private Panneau pan;
   private PrintWriter writer = null;
   private BufferedInputStream reader = null;
+  private Clientlisten cl;
   public Client(String nom,String host,int port,Panneau pan){
     this.nom=nom;
     this.host=host;
@@ -19,7 +20,7 @@ public class Client implements Runnable{
     this.pan=pan;
   }
 
-   public void open() {
+   public boolean open() {
       int stream;
       Scanner sc = new Scanner(System.in);
       String command;
@@ -31,8 +32,10 @@ public class Client implements Runnable{
           connexion = new Socket(host, port);
       } catch (UnknownHostException e) {
           e.printStackTrace();
+          return false;
       } catch (IOException e) {
           e.printStackTrace();
+          return false;
       }
       try {
           writer = new PrintWriter(connexion.getOutputStream(), true);
@@ -44,36 +47,35 @@ public class Client implements Runnable{
           command = new String(b, 0, stream);
           if(command.compareTo("ko")==0){
               System.out.println("nom existe");
+              return false;
           }
           else{
-              Thread t = new Thread(new Clientlisten(reader,pan));
+              cl=new Clientlisten(reader,pan);
+              Thread t = new Thread(cl);
               t.start();
+              return true;
 
           }
       }catch (IOException e1) {
             e1.printStackTrace();
+            return false;
       }
    }
 
 
    public void sendmsg(String msg){
-       //int stream;
-       //byte[] b = new byte[4096];
        writer.write(msg);
        writer.flush();
        System.out.println("msg envoye");
-       /*
-       if(msg.compareTo("/q")==0)
-           over=true;
-       if(msg.compareTo("/l")==0){
-           stream=reader.read(b);
-           msg = new String(b, 0, stream);
-           System.out.println(msg);
-       }*/
+       
+
+   }
+
+   public void close(){
+      cl.shutdown();
+      sendmsg("/q");
+
    }
 
 
-   public void run(){
- 			open();
- 	  }
 }

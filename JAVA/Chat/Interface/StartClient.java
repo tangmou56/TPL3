@@ -1,8 +1,5 @@
 
-
- 
-
-public class Test {
+public class StartClient {
 
   public static void main(String[] args){
 

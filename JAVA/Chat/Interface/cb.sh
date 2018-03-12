@@ -1,4 +1,3 @@
 rm *.class
-javac Test.java
-javac Main.java
-javac Client.java
+javac StartServer.java
+javac StartClient.java

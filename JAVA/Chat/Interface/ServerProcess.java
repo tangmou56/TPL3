@@ -43,10 +43,10 @@ public class ServerProcess implements Runnable {
 	        //debug = "Thread : " + Thread.currentThread().getName() + ". ";
 	        debug += "Demande de l'adresse : " + remote.getAddress().getHostAddress() +".";
 					port=remote.getPort();
-	        debug += "sur port:"+port;
+	        debug += "sur port:"+port+" ";
 					stream=reader.read(b);
 					nom = new String(b, 0, stream);
-					debug += "nom:"+nom;
+					debug += "nom:"+nom+" ";
 					System.err.println("\n" + debug);
 
 					if(db.newone(nom,sock)){
