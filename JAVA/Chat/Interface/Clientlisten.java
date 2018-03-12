@@ -10,6 +10,9 @@ import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
 
+
+
+//ecoute les messages de serveur
 public class Clientlisten implements Runnable {
 
 	private Socket sock;
@@ -18,53 +21,51 @@ public class Clientlisten implements Runnable {
 	private Panneau pan;
 	public Clientlisten(BufferedInputStream reader,Panneau pan){
   		this.reader=reader;
-			this.pan=pan;
+		this.pan=pan;
 	}
 
 
 
 	public void process(){
-      String msg;
-      int stream;
-      byte[] b = new byte[4096];
+      	String msg;
+      	int stream;
+      	byte[] b = new byte[4096];
 	    try {
-          while(!over){
-            stream=reader.read(b);
-            msg = new String(b, 0, stream);
-						if(msg.startsWith("/l")){
-							pan.con().setText("");
-							System.out.println("recive list");
-							msg=msg.replace("/l","");
-							String[] ls=msg.split(",");
-							for(int i=0;i<ls.length;i++)
-								pan.con().append(ls[i]+"\n");
-
-
-							
-						}
-						else{
-            				System.out.println(msg);
-							pan.dis().append(msg+"\n");
-							JScrollBar scrollBar=pan.sdis().getVerticalScrollBar();
-							scrollBar.setValue(scrollBar.getMaximum());
-						}
-          }
-			}
+          	while(!over){
+            	stream=reader.read(b);
+            	msg = new String(b, 0, stream);
+            		//recu la liste les utilisateur connecté
+					if(msg.startsWith("/l")){
+						pan.con().setText("");
+						System.out.println("recive list");
+						msg=msg.replace("/l","");
+						String[] ls=msg.split(",");
+						for(int i=0;i<ls.length;i++)
+							pan.con().append(ls[i]+"\n");				
+					}
+					else{
+            			System.out.println(msg);
+						pan.dis().append(msg+"\n");
+						JScrollBar scrollBar=pan.sdis().getVerticalScrollBar();
+						scrollBar.setValue(scrollBar.getMaximum());
+					}
+          	}
+		}
 	    catch(SocketException e){
             System.err.println("LA CONNEXION A ETE INTERROMPUE ! ");
 	    } catch (IOException e) {
-	          e.printStackTrace();
+	        e.printStackTrace();
 	    }
 
 
 	}
 
 	public void run(){
-			process();
+		process();
 	}
 
   public void shutdown(){
-    over=true;
+    	over=true;
   }
 
 

@@ -24,19 +24,19 @@ public class ServerProcess implements Runnable {
 	    System.err.println("Lancement du traitement de la connexion cliente");
 
 	    try {
-					int port;
-					boolean over=false;
-					String nom;
+			int port;
+			boolean over=false;
+			String nom;
 	        //Ici, nous n'utilisons pas les mêmes objets que précédemment
 	        //Je vous expliquerai pourquoi ensuite
 	        writer = new PrintWriter(sock.getOutputStream());
-          reader = new BufferedInputStream(sock.getInputStream());
+          	reader = new BufferedInputStream(sock.getInputStream());
 
 	        //On attend la demande du client
 	        byte[] b = new byte[4096];
 	        int stream;
 	        String response;
-          InetSocketAddress remote = (InetSocketAddress)sock.getRemoteSocketAddress();
+          	InetSocketAddress remote = (InetSocketAddress)sock.getRemoteSocketAddress();
 
 	        //On affiche quelques infos, pour le débuggage
 	        String debug = "";
@@ -52,7 +52,7 @@ public class ServerProcess implements Runnable {
 					if(db.newone(nom,sock)){
 						System.out.println("nom existe");
 						writer.write("ko");
-			      writer.flush();
+			      		writer.flush();
 					}
 					else{
 						writer.write("ok");
@@ -69,11 +69,6 @@ public class ServerProcess implements Runnable {
 
 							if(response.compareTo("/q")==0)
 								over=true;
-							/*else if(response.compareTo("/l")==0){
-								String list=String.join(",", db.listnom());
-								writer.write(list);
-								writer.flush();
-							}*/
 							else{
 								broadcast(nom+":"+response);
 							}
@@ -95,31 +90,32 @@ public class ServerProcess implements Runnable {
 	}
 
 	public void run(){
-			process();
+		process();
 	}
 
 
 	public void broadcast(String msg){
-			PrintWriter writer = null;
-			ArrayList<Socket> l=db.listconnected();
-			Socket sock;
-			for(int i=0;i<l.size();i++){
-					sock=l.get(i);
-					if(sock!=this.sock){
-							try{
-								writer=new PrintWriter(sock.getOutputStream());
-							}catch (IOException e1) {
-				        e1.printStackTrace();
-				      }
+		PrintWriter writer = null;
+		ArrayList<Socket> l=db.listconnected();
+		Socket sock;
+		for(int i=0;i<l.size();i++){
+			sock=l.get(i);
+			if(sock!=this.sock){
+				try{
+					writer=new PrintWriter(sock.getOutputStream());
+				}catch (IOException e1) {
+			       	e1.printStackTrace();
+			    }
 
-							writer.write(msg);
-							writer.flush();
-					}
-					else{
-							this.writer.write(msg);
-							this.writer.flush();
-					}
+				writer.write(msg);
+				writer.flush();
 			}
+			else{
+				this.writer.write(msg);
+				this.writer.flush();
+			}
+		}
 	}
+
 
 }

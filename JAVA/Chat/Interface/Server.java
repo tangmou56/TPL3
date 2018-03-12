@@ -18,9 +18,7 @@ public class Server {
 
       String host = "127.0.0.1";
       int port = 2345;
-      //ServerSocket server = null;
-      //Database db=new Database();
-      //Socket sock=null;
+
 
       try {
          server = new ServerSocket(port, 100, InetAddress.getByName(host));

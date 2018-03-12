@@ -96,6 +96,7 @@ public class Panneau extends JPanel {
                     client.close();
                     envo.setEnabled(false);
                     addtext("deconnecte\n");
+                    textcon.setText("");
                 }
             }
         });
@@ -158,23 +159,13 @@ public class Panneau extends JPanel {
     return scrolldis;
   }
 
+  //ajoute du text dans la region de discussion
   public void addtext(String msg){
     textdis.append(msg);
     JScrollBar scrollBar=scrolldis.getVerticalScrollBar();
     scrollBar.setValue(scrollBar.getMaximum());
   }
 
-
-  public void deconnecte(){
-      connected=false;
-      nom.setEditable(true);
-      ip.setEditable(true);
-      port.setEditable(true);
-      con.setText("connection");
-      client.close();
-      envo.setEnabled(false);
-      addtext("deconnecte\n");
-  }
 
 
 }
