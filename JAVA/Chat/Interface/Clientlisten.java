@@ -9,7 +9,7 @@ import java.util.Date;
 import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
-
+import javax.swing.text.* ;
 
 
 //ecoute les messages de serveur
@@ -36,18 +36,17 @@ public class Clientlisten implements Runnable {
             	msg = new String(b, 0, stream);
             		//recu la liste les utilisateur connecté
 					if(msg.startsWith("/l")){
-						pan.con().setText("");
-						System.out.println("recive list");
-						msg=msg.replace("/l","");
-						String[] ls=msg.split(",");
-						for(int i=0;i<ls.length;i++)
-							pan.con().append(ls[i]+"\n");				
+							pan.con().setText("");
+							System.out.println("recive list");
+							msg=msg.replace("/l","");
+							String[] ls=msg.split(",");
+							for(int i=0;i<ls.length;i++)
+								pan.con().append(ls[i]+"\n");
 					}
 					else{
-            			System.out.println(msg);
-						pan.dis().append(msg+"\n");
-						JScrollBar scrollBar=pan.sdis().getVerticalScrollBar();
-						scrollBar.setValue(scrollBar.getMaximum());
+	            System.out.println(msg);
+							pan.addtext(msg+"\n");
+							
 					}
           	}
 		}
@@ -67,6 +66,7 @@ public class Clientlisten implements Runnable {
   public void shutdown(){
     	over=true;
   }
+
 
 
 }

@@ -8,7 +8,7 @@ public class Fenetre extends JFrame {
   private Panneau pan;
 
 
-  
+
 
   public Fenetre() {
     pan = new Panneau();
@@ -20,9 +20,21 @@ public class Fenetre extends JFrame {
     this.setContentPane(pan);
     this.setVisible(true);
     this.setResizable(false);
+
+
+
+    this.addWindowListener(new java.awt.event.WindowAdapter() {
+      @Override
+      public void windowClosing(java.awt.event.WindowEvent windowEvent) {
+
+          if(pan.client()!=null)
+              pan.client().close();
+      }
+    });
+
   }
 
-  
-    
-  
+
+
+
 }

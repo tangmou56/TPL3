@@ -1,7 +1,8 @@
 import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
-
+import javax.swing.event.*;
+import javax.swing.text.* ;
 public class Panneau extends JPanel {
 
   private JLabel lbnom = new JLabel("Nom");
@@ -16,37 +17,44 @@ public class Panneau extends JPanel {
   private JTextField port=new JTextField(5);
   private JButton envo=new JButton("envoyer");
   private JTextArea textcon = new JTextArea(20, 5);
-  private JTextArea textdis = new JTextArea(20, 30);
+  private JTextPane textpan = new JTextPane();
   private JTextField textmes=new JTextField(15);
-  private JScrollPane scrolldis = new JScrollPane(); 
-  private JScrollPane scrollcon = new JScrollPane(); 
+  private JScrollPane scrolldis = new JScrollPane();
+  private JScrollPane scrollcon = new JScrollPane();
   private Client client;
   private boolean connected=false;
+  private JComboBox comboBox=new JComboBox();
+
+
   public Panneau(){
 
       ip.setText("127.0.0.1");
       port.setText("2345");
 
+
       envo.setEnabled(false);
       textcon.setEditable(false);
-      textdis.setEditable(false);
-
-      scrolldis.setHorizontalScrollBarPolicy( 
-      JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS); 
-      scrolldis.setVerticalScrollBarPolicy( 
-      JScrollPane.VERTICAL_SCROLLBAR_ALWAYS); 
-
-      scrolldis.setBounds(28, 209, 752, 265);
-      textdis.setBounds(28, 209, 752, 265);
-      scrolldis.setViewportView(textdis);
+      textpan.setEditable(false);
+      textpan.setPreferredSize(new Dimension(350,300));
+      scrolldis.setHorizontalScrollBarPolicy(
+      JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
+      scrolldis.setVerticalScrollBarPolicy(
+      JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
 
 
-      scrollcon.setHorizontalScrollBarPolicy( 
-      JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS); 
-      scrollcon.setVerticalScrollBarPolicy( 
-      JScrollPane.VERTICAL_SCROLLBAR_ALWAYS); 
+
+      scrolldis.setViewportView(textpan);
+      scrolldis.setPreferredSize(new Dimension(350,300));
+
+      scrollcon.setHorizontalScrollBarPolicy(
+      JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
+      scrollcon.setVerticalScrollBarPolicy(
+      JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
       scrollcon.setViewportView(textcon);
 
+      comboBox.addItem("Red");
+      comboBox.addItem("Blue");
+      comboBox.addItem("Yellow");
 
       Box vbox=Box.createVerticalBox();
       Box vbox2=Box.createVerticalBox();
@@ -54,19 +62,20 @@ public class Panneau extends JPanel {
       Box hbox1=Box.createHorizontalBox();
       Box hbox2=Box.createHorizontalBox();
       Box hbox3=Box.createHorizontalBox();
-
+      Box hbox4=Box.createHorizontalBox();
 
 
       Panneau pan=this;
+
       con.addActionListener(new ActionListener() {
 
             @Override
             public void actionPerformed(ActionEvent e) {
-                
+
                 if(!connected){
                     String n=nom.getText();
                     if(n.contains("/l")){
-                        textdis.append("nom invalide\n");
+                        addtext("nom invalide\n");
                         return;
                     }
 
@@ -78,14 +87,15 @@ public class Panneau extends JPanel {
                         nom.setEditable(false);
                         ip.setEditable(false);
                         port.setEditable(false);
-                        con.setText("déconnection");
+                        con.setText("deconnnection");
                         envo.setEnabled(true);
-                        addtext("Connecté\n");
+                        addtext("Connecté");
+
                     }
                     else{
                         addtext("connexion impossible\n");
                     }
-                    
+
                 }
                 else{
                     connected=false;
@@ -95,11 +105,13 @@ public class Panneau extends JPanel {
                     con.setText("connection");
                     client.close();
                     envo.setEnabled(false);
-                    addtext("deconnecte\n");
-                    textcon.setText("");
+                    addtext("deconnecte");
+                    client=null;
+
                 }
             }
         });
+
 
 
         envo.addActionListener(new ActionListener() {
@@ -111,12 +123,50 @@ public class Panneau extends JPanel {
                   else if(textmes.getText().startsWith("/l"))
                     client.sendmsg(textmes.getText().replace("/l"," /l"));
                   else
-                    client.sendmsg(textmes.getText());
+                    client.sendmsg("/"+comboBox.getSelectedIndex()+textmes.getText());
               }
           });
 
 
 
+          ip.getDocument().addDocumentListener(new DocumentListener() {
+                @Override
+                public void changedUpdate(DocumentEvent e){
+                        checkok();
+                }
+                public void removeUpdate(DocumentEvent e) {
+                        checkok();
+                }
+                public void insertUpdate(DocumentEvent e) {
+                        checkok();
+                }
+            });
+            nom.getDocument().addDocumentListener(new DocumentListener() {
+                  @Override
+                  public void changedUpdate(DocumentEvent e){
+                          checkok();
+                  }
+                  public void removeUpdate(DocumentEvent e) {
+                          checkok();
+                  }
+                  public void insertUpdate(DocumentEvent e) {
+                          checkok();
+                  }
+              });
+              port.getDocument().addDocumentListener(new DocumentListener() {
+                    @Override
+                    public void changedUpdate(DocumentEvent e){
+                            checkok();
+                    }
+                    public void removeUpdate(DocumentEvent e) {
+                            checkok();
+                    }
+                    public void insertUpdate(DocumentEvent e) {
+                            checkok();
+                    }
+              });
+
+      con.setEnabled(false);
 
       hbox1.add(lbnom);
       hbox1.add(nom);
@@ -132,7 +182,9 @@ public class Panneau extends JPanel {
       vbox2.add(scrolldis);
       vbox2.add(lbmes);
       vbox2.add(textmes);
-      vbox2.add(envo);
+      hbox4.add(envo);
+      hbox4.add(comboBox);
+      vbox2.add(hbox4);
       hbox3.add(vbox2);
       vbox.add(hbox1);
       vbox.add(hbox2);
@@ -147,8 +199,8 @@ public class Panneau extends JPanel {
 
   }
 
-  public JTextArea dis(){
-    return textdis;
+  public JTextPane dis(){
+    return textpan;
   }
 
   public JTextArea con(){
@@ -161,11 +213,45 @@ public class Panneau extends JPanel {
 
   //ajoute du text dans la region de discussion
   public void addtext(String msg){
-    textdis.append(msg);
+    Color color=Color.black;
+    if(msg.contains("/0")){
+        msg=msg.replace("/0","");
+        color=Color.red;
+    }
+    if(msg.contains("/1")){
+        msg=msg.replace("/1","");
+        color=Color.blue;
+    }
+    if(msg.contains("/2")){
+        msg=msg.replace("/2","");
+        color=Color.yellow;
+    }
+
+    StyledDocument doc = textpan.getStyledDocument();
+    Style style = textpan.addStyle("I'm a Style", null);
+    StyleConstants.setForeground(style, color);
+    try
+    {
+        doc.insertString(doc.getLength(), msg+"\n", style );
+    }
+    catch(Exception e) { System.out.println(e); }
+
+    //textdis.append(msg);
     JScrollBar scrollBar=scrolldis.getVerticalScrollBar();
     scrollBar.setValue(scrollBar.getMaximum());
   }
 
+
+  public void checkok(){
+    if(!ip.getText().equals("")&&!port.getText().equals("")&&!nom.getText().equals(""))
+        con.setEnabled(true);
+    else
+        con.setEnabled(false);
+  }
+
+  public Client client(){
+    return client;
+  }
 
 
 }
